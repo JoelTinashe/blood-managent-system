@@ -43,11 +43,11 @@ public class OrganisationController {
         return organisationService.getActiveOrganisation();
     }
 
-    @GetMapping("/organisation/view/byStatus/{status}")
-    public ResponseEntity getOrganisationByStatus(@PathVariable boolean status,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-                                                @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
-        return organisationService.getOrganisationByStatus(status,page, size);
-    }
+//    @GetMapping("/organisation/view/byStatus/{status}")
+//    public ResponseEntity getOrganisationByStatus(@PathVariable boolean status,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+//                                                @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
+//        return organisationService.getOrganisationByStatus(status,page, size);
+//    }
 
 
 

@@ -8,29 +8,31 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
 public class UserPrincipal implements UserDetails {
 
-    private String userId;
+  final  private String  userId;
     private String firstName;
     private String lastName;
     private String tokenHash;
-    private String username;
+ final    private String username;
 
     @JsonIgnore
-    private String email;
+final     private String email;
 
     @JsonIgnore
-    private String password;
+ final    private String password;
 
-    private Collection<? extends GrantedAuthority> privileges;
+ final    private Collection<? extends GrantedAuthority> privileges;
 
-    private Collection<Role> roles;
+ final    private Collection<Role> roles;
 
     public UserPrincipal(String userId, String firstName, String lastName, String tokenHash, String username, String email, String password, Collection<? extends GrantedAuthority> privileges,
                          Collection<Role> roles) {

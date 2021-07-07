@@ -3,12 +3,12 @@ package com.digitalkrapht.bloodbank.bloodbank.utils.responcse;
 import java.util.Collection;
 
 public class PagedResponse<T>{
-    private Collection<T> content;
-    private int page;
-    private int size;
-    private long totalElements;
-    private int totalPages;
-    private boolean last;
+    public Collection<T> content;
+    public int page;
+    public int size;
+    public long totalElements;
+    public int totalPages;
+    public boolean last;
 
     public PagedResponse() {
 

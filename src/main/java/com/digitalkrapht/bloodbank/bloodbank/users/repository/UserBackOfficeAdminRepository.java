@@ -11,6 +11,7 @@ import java.util.List;
 public interface UserBackOfficeAdminRepository extends JpaRepository<UserBackOfficeAdmin,String> {
 
     List<UserBackOfficeAdmin> findByEnabled(boolean status);
+    //Page<UserBackOfficeAdmin> findByPageSizeGreaterThanEqualAndPageSizeLessThanEqual(int startPage, int endPage, Pageable pageable);
     Page<UserBackOfficeAdmin> findByEnabled(boolean status, Pageable pageable);
     Long countByEnabled(boolean status);
     Page<UserBackOfficeAdmin> findDistinctByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String  firstName, String  lastname, Pageable pageable);

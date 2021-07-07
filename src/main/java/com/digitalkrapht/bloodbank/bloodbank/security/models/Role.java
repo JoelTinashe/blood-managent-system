@@ -22,7 +22,7 @@ public class Role  extends BaseAudit {
 
     @NaturalId
     @Column(length = 60)
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private RoleName name;
     @Size(max = 5000)
     private String Description;

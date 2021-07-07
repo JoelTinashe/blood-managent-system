@@ -115,10 +115,10 @@ public class OrganisationService {
         organization.setOrganisationType(request.getOrganisationType());
         organization.setContactPerson(request.getContactPerson());
         organization.setPhoneNumber(request.getPhoneNumber());
-//        organizationAgent.setUserId(stringGeneratorUtility.fetchValidUserId(RoleName.ROLE_CUSTOMER_DONOR));
 
-        Organisation saveOrganisation = organisationRepository.save(organization);
-        return ResponseEntity.ok(new GenericApiResponse("Organisation agent  Created Successfully"));
+
+          organisationRepository.save(organization);
+        return ResponseEntity.ok(new GenericApiResponse("Organisation Created Successfully"));
     }
    /// /////////////////////////Update Organisation Agent///////////////////////////////////////////
     public ResponseEntity updateOrganisation(UpdateOrganisationRequest request){
@@ -139,15 +139,15 @@ public class OrganisationService {
         return ResponseEntity.ok(new GenericApiResponse("Organisation  Updated Successfully"));
     }
     //get Organisation Agent by status
-    public ResponseEntity getOrganisationByStatus(boolean status, int page, int size) {
-        formatUtility.validatePageNumberAndSize(page, size);
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC,"");
-        Page<Organisation> organisation = organisationRepository.findByEnabled(status, pageable);
-        List<OrganisationResponse> userSummaries = organisation.stream().map(this::mapOrganisationEntityToResponse).collect(toList());
-        return ResponseEntity.ok(new PagedResponse<>(userSummaries, organisation.getNumber(),
-                organisation.getSize(), organisation.getTotalElements(), organisation.getTotalPages(), organisation.isLast()));
-
-    }
+//    public ResponseEntity getOrganisationByStatus(boolean status, int page, int size) {
+//        formatUtility.validatePageNumberAndSize(page, size);
+//        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC,"");
+//        Page<Organisation> organisation = organisationRepository.findByEnabled(status, pageable);
+//        List<OrganisationResponse> userSummaries = organisation.stream().map(this::mapOrganisationEntityToResponse).collect(toList());
+//        return ResponseEntity.ok(new PagedResponse<>(userSummaries, organisation.getNumber(),
+//                organisation.getSize(), organisation.getTotalElements(), organisation.getTotalPages(), organisation.isLast()));
+//
+//    }
     // changing Organisation activate /deactivate Status
     public ResponseEntity changeOrganisationStatus(Long Id, boolean status) {
         Organisation organization= organisationRepository.findById(Id).orElse(null);
@@ -180,7 +180,6 @@ public class OrganisationService {
         bloodGrouprepository.save(bloodGroup);
         return ResponseEntity.ok(new GenericApiResponse("Blood group Created Successfully"));
     }
-    /// /////////////////////////Update Organisation Agent///////////////////////////////////////////
     public ResponseEntity updateBloodGroup(UpdateBloodGroupRequest request){
 
         ResponseEntity theResponse = validateUserProperties.isValidUpdateBloodGroupRequest(request);

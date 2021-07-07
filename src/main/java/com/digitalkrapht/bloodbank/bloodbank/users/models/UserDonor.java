@@ -25,7 +25,7 @@ public class UserDonor extends User {
     private int age;
 
     @OneToOne
-    @JoinColumn(name = "bloodGroupId",updatable = false,insertable = false)
+    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
     private BloodGroup bloodGroup;
 
 

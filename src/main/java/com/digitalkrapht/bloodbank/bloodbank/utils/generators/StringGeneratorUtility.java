@@ -19,14 +19,18 @@ public class StringGeneratorUtility {
         if (role.equals(RoleName.ROLE_BACK_OFFICE_ADMIN)) {
             userType = "USH";
         } else if (role.equals(RoleName.ROLE_SYSTEM)) {
-            userType = "USA";
+            userType = "USS";
         } else if (role.equals(RoleName.ROLE_BACK_OFFICE_AGENT)) {
-            userType = "USL";
+            userType = "USA";
         }  else if (role.equals(RoleName.ROLE_CUSTOMER_DONOR)) {
-            userType = "UCU";
+            userType = "USD";
         }
         else if (role.equals(RoleName.ROLE_ORGANIZATION_AGENT)) {
-            userType = "UOA";
+            userType = "USO";
+        }
+
+        else if (role.equals(RoleName.ROLE_RECIPIENT)) {
+            userType = "USR";
         }
         else {
             userType = "BAD";

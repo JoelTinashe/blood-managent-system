@@ -14,19 +14,20 @@ import javax.persistence.*;
 @Data
 public class BloodRequest extends DateAudit {
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long Id;
     private String quantity;
     @Enumerated(EnumType.STRING)
     private BloodStatus bLoodStatus=BloodStatus.NOT_SET;
     private Boolean enabled = true;
     @ManyToOne
-    @JoinColumn(name = "organisationAgentId", updatable = false,insertable = false)
+    @JoinColumn(name = "organisationAgentId", referencedColumnName = "userId")
     private UserOrganizationAgent userOrganizationAgent;
     @ManyToOne
-    @JoinColumn(name = "bloodGroupId",updatable = false,insertable = false)
+    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
     private BloodGroup bloodGroup;
     @OneToOne
-    @JoinColumn(name = "bloodRecipientId",updatable = false,insertable = false)
+    @JoinColumn(name = "bloodRecipientId",referencedColumnName = "userId")
     private BloodRecipient bloodRecipient;
 
 

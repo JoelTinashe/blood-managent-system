@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class OrganisationResponse {
 
-    private Long Id;
+    private long id;
     private String organisation_Id;
     public String organisationName;
     private String address;

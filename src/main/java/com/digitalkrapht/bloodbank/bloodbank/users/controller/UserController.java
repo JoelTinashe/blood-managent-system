@@ -1,11 +1,13 @@
 package com.digitalkrapht.bloodbank.bloodbank.users.controller;
 
+import com.digitalkrapht.bloodbank.bloodbank.security.user.UserPrincipal;
 import com.digitalkrapht.bloodbank.bloodbank.users.request.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.service.UserService;
 import com.digitalkrapht.bloodbank.bloodbank.utils.constants.AppConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -34,6 +36,7 @@ public class UserController {
     }
     @GetMapping("/backOfficeAdmin/view/active")
     public ResponseEntity getActiveBackOfficeAdmins() {
+//       UserPrincipal currentUSer= (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userService.getActiveBackOfficeAdmins();
     }
     @GetMapping("/backOfficeAdmin/view/all")

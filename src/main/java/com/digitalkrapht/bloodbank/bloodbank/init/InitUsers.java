@@ -6,14 +6,8 @@ import com.digitalkrapht.bloodbank.bloodbank.security.models.Role;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.RoleName;
 import com.digitalkrapht.bloodbank.bloodbank.security.repository.PermissionRepository;
 import com.digitalkrapht.bloodbank.bloodbank.security.repository.RoleRepository;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.User;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.UserBackOfficeAdmin;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.UserBackOfficeAgent;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.UserSystemAdmin;
-import com.digitalkrapht.bloodbank.bloodbank.users.repository.UserBackOfficeAdminRepository;
-import com.digitalkrapht.bloodbank.bloodbank.users.repository.UserBackOfficeAgentRepository;
-import com.digitalkrapht.bloodbank.bloodbank.users.repository.UserRepository;
-import com.digitalkrapht.bloodbank.bloodbank.users.repository.UserSystemsAdminRepository;
+import com.digitalkrapht.bloodbank.bloodbank.users.models.*;
+import com.digitalkrapht.bloodbank.bloodbank.users.repository.*;
 import com.digitalkrapht.bloodbank.bloodbank.utils.format.FormatUtility;
 import com.digitalkrapht.bloodbank.bloodbank.utils.generators.StringGeneratorUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +41,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
         FormatUtility formatUtility;
         @Autowired
         PasswordEncoder passwordEncoder;
+        @Autowired
+        UserOrganisationAgentRepository userOrganisationAgentRepository;
+        @Autowired
+        UserDonorRepository userDonorRepository;
+        @Autowired
+        BloodRecipientRepositorry bloodRecipientRepositorry;
         private void saveUserBackend(String firstName, String surname,  String email, RoleName roleName) {
 
             Role role = roleRepository.findByName(roleName).orElse(null);
 
-            //===save admin
             if (roleName.equals(RoleName.ROLE_SYSTEM)) {
                 UserSystemAdmin admin = new UserSystemAdmin();
                 admin.setUserId(stringGeneratorUtility.fetchValidUserId(roleName));
@@ -100,25 +99,77 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 //////////////////////assign Permissions////////////////////////
                 assignPermissionsByRoleToUser(RoleName.ROLE_BACK_OFFICE_ADMIN,savedAdmin);
             }
+            if (roleName.equals(RoleName.ROLE_ORGANIZATION_AGENT)) {
+
+                UserOrganizationAgent organizationAgent = new UserOrganizationAgent();
+                organizationAgent.setUserId(stringGeneratorUtility.fetchValidUserId(roleName));
+                organizationAgent.setFirstName(firstName);
+                organizationAgent.setLastName(surname);
+                organizationAgent.setEmail(email);
+                organizationAgent.setResetPin(false);
+                organizationAgent.setPassword(passwordEncoder.encode("1111"));
+                organizationAgent.setRoles(Collections.singletonList(role));
+                organizationAgent.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
+                organizationAgent.setUsername(email);
+                UserOrganizationAgent savedAgent = userOrganisationAgentRepository.save(organizationAgent);
+                //////////////////////assign Permissions////////////////////////
+                assignPermissionsByRoleToUser(RoleName.ROLE_ORGANIZATION_AGENT,savedAgent);
+            }
+            if (roleName.equals(RoleName.ROLE_CUSTOMER_DONOR)) {
+
+                UserDonor userDonor= new UserDonor();
+                userDonor.setUserId(stringGeneratorUtility.fetchValidUserId(roleName));
+                userDonor.setFirstName(firstName);
+                userDonor.setLastName(surname);
+                userDonor.setEmail(email);
+                userDonor.setResetPin(false);
+                userDonor.setPassword(passwordEncoder.encode("1111"));
+                userDonor.setRoles(Collections.singletonList(role));
+                userDonor.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
+                userDonor.setUsername(email);
+                UserDonor savedDonors = userDonorRepository.save(userDonor);
+                //////////////////////assign Permissions////////////////////////
+                assignPermissionsByRoleToUser(RoleName.ROLE_CUSTOMER_DONOR,savedDonors);
+            }
+            if (roleName.equals(RoleName.ROLE_RECIPIENT)) {
+
+                BloodRecipient bloodRecipient= new BloodRecipient();
+                bloodRecipient.setUserId(stringGeneratorUtility.fetchValidUserId(roleName));
+                bloodRecipient.setFirstName(firstName);
+                bloodRecipient.setLastName(surname);
+                bloodRecipient.setEmail(email);
+                bloodRecipient.setResetPin(false);
+                bloodRecipient.setPassword(passwordEncoder.encode("1111"));
+                bloodRecipient.setRoles(Collections.singletonList(role));
+                bloodRecipient.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
+                bloodRecipient.setUsername(email);
+                BloodRecipient saveRecipient = bloodRecipientRepositorry.save(bloodRecipient);
+                //////////////////////assign Permissions////////////////////////
+                assignPermissionsByRoleToUser(RoleName.ROLE_RECIPIENT,saveRecipient);
+            }
+
 
 
 
 
         }
 
+
         @PostConstruct
         private void InitializeUsers(){
 
             if (userRepository.findAll().isEmpty()) {
                 //===system
-                this.saveUserBackend("joel", "mashawi", "joel.t.mashawi@gmail.com",
+                this.saveUserBackend("john", "mashawi", "joel.mashawi@gmail.com",
                         RoleName.ROLE_BACK_OFFICE_ADMIN);
                 this.saveUserBackend("Shingi", "Digi", "freddy@digitalkrapht.com",
                         RoleName.ROLE_BACK_OFFICE_AGENT);
                 this.saveUserBackend("Freddy", "Mutonga", "khumutonga@gmail.com",
-                        RoleName.ROLE_SYSTEM);
+                        RoleName.ROLE_RECIPIENT);
                 this.saveUserBackend("Chiedza", "Daly", "chiedza@gmail.com",
-                        RoleName.ROLE_SYSTEM);
+                        RoleName.ROLE_CUSTOMER_DONOR);
+                this.saveUserBackend("Chiedza", "Daly", "chi@gmail.com",
+                        RoleName.ROLE_ORGANIZATION_AGENT);
 
 
 

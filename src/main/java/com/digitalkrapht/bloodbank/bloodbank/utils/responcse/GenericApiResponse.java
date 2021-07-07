@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class GenericApiResponse {
-    public GenericApiResponse(String status) {
+    public GenericApiResponse(String massage) {
         this.status = "success";
         this.massage = massage;
     }

@@ -7,6 +7,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 @Data
 public class AddOrganisationRequest {
+
     private String organisationName;
     @NotNull
     private String email;

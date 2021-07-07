@@ -17,16 +17,16 @@ public class BloodCollection extends DateAudit {
     private int id;
     private boolean enabled =true;
     @OneToOne
-    @JoinColumn(name = "bloodRecipientId",insertable = false,updatable = false)
+    @JoinColumn(name = "bloodRecipientId",referencedColumnName = "userId")
     private BloodRecipient bloodRecipient;
     @OneToOne
-    @JoinColumn(name = "organisationAgentId",updatable = false,insertable = false)
+    @JoinColumn(name = "organisationAgentId",referencedColumnName = "userId")
     private UserOrganizationAgent organizationAgent;
     @OneToOne
-    @JoinColumn(name = "backOfficeAdminId")
+    @JoinColumn(name = "backOfficeAdminId",referencedColumnName = "userId")
     private UserBackOfficeAdmin backOfficeAdmin;
     @OneToOne
-    @JoinColumn(name = "bloodRequestId",insertable = false,updatable = false)
+    @JoinColumn(name = "bloodRequestId",referencedColumnName = "Id")
     private BloodRequest bloodRequest;
     @Enumerated(EnumType.STRING)
     private Quantity quantity= Quantity.APPROVED;

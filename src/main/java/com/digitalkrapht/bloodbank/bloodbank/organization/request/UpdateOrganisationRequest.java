@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UpdateOrganisationRequest {
 
-   private Long Id;
+   private long id;
     @NotNull
     private String email;
     @NotNull

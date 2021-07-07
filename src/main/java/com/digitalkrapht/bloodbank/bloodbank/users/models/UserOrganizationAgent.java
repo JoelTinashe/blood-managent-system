@@ -23,7 +23,7 @@ public class UserOrganizationAgent extends User{
     private String designation;
     private String organisationName;
     @ManyToOne
-    @JoinColumn(name = "organisationId",insertable = false,updatable = false)
+    @JoinColumn(name = "organisationId",referencedColumnName = "id")
     private Organisation organisation;
 
 

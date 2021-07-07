@@ -17,8 +17,8 @@ public class CustomAuditAware implements AuditorAware<String> {
         if (authentication == null || !((org.springframework.security.core.Authentication) authentication).isAuthenticated()) {
             return null;
         }
-        return null;
-//           return Optional.of(((UserPrincipal) authentication.getPrincipal()).getUserId());
+   return null;
+      //  return Optional.of(((UserPrincipal) authentication.getPrincipal()).getUserId());
     }
 }
 

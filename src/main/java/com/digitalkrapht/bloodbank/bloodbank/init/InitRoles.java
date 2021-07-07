@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component("initRoles")
 public class InitRoles {
@@ -71,6 +72,18 @@ public class InitRoles {
             final Privilege activateBackendAgents = savePrivilege("ACTIVATE_BACKEND_AGENTS");
             final Privilege updateBackendAgents = savePrivilege("EDIT_BACKEND_AGENTS");
             final Privilege viewBackendAgents = savePrivilege("VIEW_BACKEND_AGENTS");
+            //donors privileges
+            final Privilege createBloodDonor = savePrivilege("CREATE_BLOOD_DONORS");
+            final Privilege activateBloodDonors = savePrivilege("ACTIVATE_BLOOD_DONORS");
+            final Privilege updateDonors = savePrivilege("EDIT_BLOOD_DONORS");
+            final Privilege donateBlood = savePrivilege("DONATE_BLOOD");
+
+            ///////////////blood recipient/////////////////////
+
+            final Privilege createBloodRecipient = savePrivilege("CREATE_BLOOD_DONORS");
+            final Privilege activateBloodRecipient= savePrivilege("ACTIVATE_BLOOD_DONORS");
+            final Privilege updateRecipient= savePrivilege("EDIT_BLOOD_DONORS");
+            final Privilege receiveRecipient= savePrivilege("RECEIVE_BLOOD");
 
             //==system organisation Agent privileges
 
@@ -88,8 +101,11 @@ public class InitRoles {
 
 //            final List<Privilege> backendAdminSMSManagementPriviledges =
 //                    new ArrayList<Privilege>(Arrays.asList(viewSMSLogs));
+            final List<Privilege> recipientUserManagementPrivileges =
+                    new ArrayList<>(Arrays.asList(createBloodRecipient,  updateRecipient, activateBloodRecipient, receiveRecipient));
 
-
+            final List<Privilege> donorUserManagementPrivileges =
+                    new CopyOnWriteArrayList<>(Arrays.asList(createBloodDonor, updateDonors, activateBloodDonors, donateBlood));
             final List<Privilege> systemAdminAppVariableManagementPriviledges =
                     new ArrayList<Privilege>(Arrays.asList(createAppVariables));
 
@@ -103,6 +119,27 @@ public class InitRoles {
 
 
 
+            //system Organisation Agent permissions////////////////////
+            Permission systemOrganisationAgentManagementPermission = this.saveNewPermission("User Management",systemOrganisationAgentsUserManagementPrivileges);
+            final List<Permission> systemOrganisationAgentPermissions =
+                    new ArrayList<Permission>(Arrays.asList(systemOrganisationAgentManagementPermission ));
+
+            //system Recipient permissions////////////////////
+            Permission systemRecipientUserManagementPermission = this.saveNewPermission("User Management",recipientUserManagementPrivileges);
+            final List<Permission> systemRecipientPermissions =
+                    new ArrayList<Permission>(Arrays.asList(systemRecipientUserManagementPermission  ));
+
+
+            //system Donor permissions////////////////////
+            Permission systemDonorsUserManagementPermission = this.saveNewPermission("User Management", donorUserManagementPrivileges);
+            final List<Permission> systemDonorsPermissions =
+                    new ArrayList<Permission>(Arrays.asList(systemDonorsUserManagementPermission  ));
+
+            //system Agent permissions////////////////////
+            Permission systemAgentsUserManagementPermission = this.saveNewPermission("User Management", systemAgentsUserManagementPrivileges);
+            final List<Permission> systemAgentPermissions =
+                    new ArrayList<Permission>(Arrays.asList(systemAgentsUserManagementPermission  ));
+
             //////////////////////////////system admin permissions///////////////////////////////////////////////////////
             Permission systemAdminUserManagementPermission = this.saveNewPermission("User Management", systemAdminUserManagementPrivileges);
             Permission systemAdminAppVariavlesManagementPermission = this.saveNewPermission("App Variables Management", systemAdminAppVariableManagementPriviledges);
@@ -111,12 +148,11 @@ public class InitRoles {
 
 
             this.saveNewRole(RoleName.ROLE_SYSTEM, "Blood Management System Administrator", false, systemAdminPermissions);
-            this.saveNewRole(RoleName.ROLE_CUSTOMER_DONOR, "Blood  Donor", false, systemAdminPermissions);
+            this.saveNewRole(RoleName.ROLE_CUSTOMER_DONOR, "Blood  Donor", false, systemDonorsPermissions);
             this.saveNewRole(RoleName.ROLE_BACK_OFFICE_ADMIN, "Back Office Admin", false, systemAdminPermissions);
-            this.saveNewRole(RoleName.ROLE_BACK_OFFICE_AGENT, "Back Office Admin", false, systemAdminPermissions);
+            this.saveNewRole(RoleName.ROLE_BACK_OFFICE_AGENT, "Back Office Agent", false, systemAgentPermissions);
             this.saveNewRole(RoleName.ROLE_ORGANIZATION_AGENT, "Organisation Agent", false, systemAdminPermissions);
-            this.saveNewRole(RoleName.ROLE_ORGANIZATION_AGENT, "Blood Management Agent", false, systemAdminPermissions);
-            this.saveNewRole(RoleName.ROLE_SYSTEM, "Blood Management System Administrator", false, systemAdminPermissions);
+            this.saveNewRole(RoleName.ROLE_RECIPIENT, "Blood Management Recipient", false, systemRecipientPermissions);
 
         }
     }

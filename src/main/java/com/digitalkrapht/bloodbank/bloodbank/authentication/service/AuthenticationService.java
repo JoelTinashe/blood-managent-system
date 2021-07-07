@@ -113,8 +113,6 @@ public class AuthenticationService {
         this.processResetPasswordNotifications(theUser.getEmail(),emailMessage);
         return ResponseEntity.ok(new GenericApiResponse("Password Reset Successfully"));
     }
-
-
     private void processResetPasswordNotifications(String email,String emailMessage) {
 
         Mail mail = new Mail();//replace with your desired email
@@ -128,7 +126,7 @@ public class AuthenticationService {
         mail.setSubject("Password Changed Successfully For "+ "Blood Management System");
 
 
-        model.put("footerText","this is a footer");
+        model.put("footerText","Blood System Management");
 
         model.put("emailText",emailMessage);
 

@@ -18,6 +18,7 @@ public class BloodRecipientRequest {
     private String address;
     @NotNull
     private String idNumber;
+    @NotNull
     private int bloodGroupId;
     @NotNull
     private Gender gender;

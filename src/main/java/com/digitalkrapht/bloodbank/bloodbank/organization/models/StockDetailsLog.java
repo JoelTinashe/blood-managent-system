@@ -19,13 +19,13 @@ public class StockDetailsLog extends DateAudit {
     private StockAdjustmentType stockAdjustmentType;
     private  String stockAdjustmentNotes;
     @OneToOne
-    @JoinColumn(name = "bloodGroupId",updatable = false,insertable = false)
+    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
     private BloodGroup bloodGroup;
     @OneToOne ()
-    @JoinColumn(name = "bloodDonorId",updatable = false,insertable = false)
+    @JoinColumn(name = "bloodDonorId",referencedColumnName = "userId")
     private UserDonor donors;
     @OneToOne
-    @JoinColumn(name = "backAgentId",updatable = false,insertable = false)
+    @JoinColumn(name = "backAgentId",referencedColumnName = "userId")
     private UserBackOfficeAgent backOfficeAgent;
 
 }

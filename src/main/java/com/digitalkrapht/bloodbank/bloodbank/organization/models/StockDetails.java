@@ -19,14 +19,14 @@ public class StockDetails extends DateAudit {
     private String unit;
     private StockAdjustmentType stockAdjustmentType=StockAdjustmentType.NOT_SET;
     private  String stockAdjustmentNotes;
-    @OneToOne
-    @JoinColumn(name = "bloodGroupId",updatable = false,insertable = false)
+    @ManyToOne
+    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
     private BloodGroup bloodGroup;
-    @OneToOne ()
-    @JoinColumn(name = "bloodDonorId",updatable = false,insertable = false)
+    @ManyToOne
+    @JoinColumn(name = "bloodDonorId",referencedColumnName = "userId")
     private UserDonor donors;
-    @OneToOne
-    @JoinColumn(name = "backAgentId",updatable = false,insertable = false)
+    @ManyToOne
+    @JoinColumn(name = "backAgentId",referencedColumnName = "userId")
     private UserBackOfficeAgent backOfficeAgent;
 
 

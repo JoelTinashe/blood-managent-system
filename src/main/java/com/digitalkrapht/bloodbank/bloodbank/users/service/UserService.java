@@ -1,5 +1,7 @@
 package com.digitalkrapht.bloodbank.bloodbank.users.service;
 
+import com.digitalkrapht.bloodbank.bloodbank.nofications.email.executor.EmailExecutor;
+import com.digitalkrapht.bloodbank.bloodbank.nofications.email.request.Mail;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.BloodGroup;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.Organisation;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.StockDetailsLog;
@@ -40,9 +42,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Id;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.util.stream.Collectors.toList;
@@ -89,6 +89,8 @@ public class UserService {
     BloodRecipientRepositorry bloodRecipientRepositorry;
     @Autowired
     DonorLogRepository donorLogRepository;
+    @Autowired
+    EmailExecutor emailExecutor;
 
 
     //////////////////////Back Office Admins////////////////////////////////////////////////////////
@@ -162,10 +164,15 @@ public class UserService {
         admin.setRoles(Collections.singletonList(role));
         admin.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
         admin.setUsername(request.getEmail());
+        String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
+        this.processGetPasswordNotifications(admin.getEmail(),emailMessage);
         UserBackOfficeAdmin savedAdmin = userBackOfficeAdminRepository.save(admin);
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_BACK_OFFICE_ADMIN,savedAdmin);
-        return ResponseEntity.ok(new GenericApiResponse("Blood Backend Admin Created Successfully"));
+        return ResponseEntity.ok(new GenericApiResponse("Blood Backend Admin Created Successfully" +
+                "Please check your Email for your password"
+                ));
+
     }
     // updating Back office Admin
     public ResponseEntity updateBackOfficeAdmin(UpdateUserBackOfficeAdminRequest request){
@@ -225,10 +232,12 @@ public class UserService {
         agent.setRoles(Collections.singletonList(role));
         agent.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
         agent.setUsername(request.getEmail());
+        String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
+        this.processGetPasswordNotifications(agent.getEmail(),emailMessage);
         UserBackOfficeAgent savedAgent = userBackOfficeAgentRepository.save(agent);
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_BACK_OFFICE_AGENT,savedAgent);
-        return ResponseEntity.ok(new GenericApiResponse("Backend Agent  Created Successfully"));
+        return ResponseEntity.ok(new GenericApiResponse("Backend Agent  Created Successfully"+"Your password have been sent through Email"));
     }
     // changing Backend agent Status
     public ResponseEntity changeBackOfficeAgentStatus(String UserId, boolean status) {
@@ -332,11 +341,13 @@ public class UserService {
         donor.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
         donor.setUsername(request.getEmail());
         UserDonor savedDonor = userDonorRepository.save(donor);
+        String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
+        this.processGetPasswordNotifications(donor.getEmail(),emailMessage);
 
 
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_CUSTOMER_DONOR,savedDonor);
-        return ResponseEntity.ok(new GenericApiResponse("Customer Donor  Created Successfully"));
+        return ResponseEntity.ok(new GenericApiResponse("Customer Donor  Created Successfully"+"Your Password have been sent through emai"));
     }
        //get Back Customer by status
     public ResponseEntity getCustomerDonorByStatus(boolean status, int page, int size) {
@@ -446,7 +457,9 @@ public class UserService {
         UserOrganizationAgent savedAgent = organisationAgentRepository.save(organizationAgent);
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_ORGANIZATION_AGENT,savedAgent);
-        return ResponseEntity.ok(new GenericApiResponse("Organisation agent  Created Successfully"));
+        String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
+        this.processGetPasswordNotifications(organizationAgent.getEmail(),emailMessage);
+        return ResponseEntity.ok(new GenericApiResponse("Organisation agent  Created Successfully"+"Password have been sent through Emil"));
     }
     /////////////////////Update Organisation Agent////////////////////////
     public ResponseEntity updateOrganisationAgent(UpdateUserOrganizationAgentRequest request){
@@ -559,7 +572,9 @@ public class UserService {
         BloodRecipient saveRecipient = bloodRecipientRepositorry.save(bloodRecipient);
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_RECIPIENT,saveRecipient);
-        return ResponseEntity.ok(new GenericApiResponse("Blood Recipient Created Successfully"));
+        String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
+        this.processGetPasswordNotifications(bloodRecipient.getEmail(),emailMessage);
+        return ResponseEntity.ok(new GenericApiResponse("Blood Recipient Created Successfully"+"Your Password have been sent through Email"));
     }
     /////////////////////Update recipient////////////////////////
     public ResponseEntity updateBloodRecipient(UpdateBloodRecipientRequest request){
@@ -797,6 +812,29 @@ public class UserService {
         user.setPermissions(permissions);
         user.setPrivileges(privileges);
         userRepository.save(user);
+
+    }
+
+    ///////////////////////////Email/////////////////////////////////////////////////////////////////
+    private void processGetPasswordNotifications(String email,String emailMessage) {
+
+        Mail mail = new Mail();//replace with your desired email
+        mail.setMailTo(email);//replace with your desired email
+        mail.setSubject("Blood Donor Management Password Creation");
+
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("headerText", "You Have Successfully received Your Password");
+
+        model.put("appName","Blood Donor System" );
+        mail.setSubject("Password have been created Successfully For "+ "Blood Management System");
+
+
+        model.put("footerText","");
+
+        model.put("emailText",emailMessage);
+
+        mail.setProps(model);
+        emailExecutor.ScheduledMailExecutor(mail,"general",1);
 
     }
 

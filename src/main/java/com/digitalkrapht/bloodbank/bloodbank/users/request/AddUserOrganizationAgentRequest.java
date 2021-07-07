@@ -19,6 +19,7 @@ public class AddUserOrganizationAgentRequest {
     private String email;
     @NotNull
     private Gender gender;
+    @NotNull
     private Long organisationId;
 
 
