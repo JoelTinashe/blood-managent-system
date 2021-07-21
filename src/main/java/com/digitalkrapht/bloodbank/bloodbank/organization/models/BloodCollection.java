@@ -1,11 +1,12 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.models;
 
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.CollectionStatus;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.Quantity;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.BloodRecipient;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.UserBackOfficeAdmin;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.UserOrganizationAgent;
 import com.digitalkrapht.bloodbank.bloodbank.utils.auth.DateAudit;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
@@ -14,8 +15,11 @@ import javax.persistence.*;
 @Data
 public class BloodCollection extends DateAudit {
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     private boolean enabled =true;
+    @Enumerated(EnumType.STRING)
+    private CollectionStatus collectionStatus=CollectionStatus.PENDING;
     @OneToOne
     @JoinColumn(name = "bloodRecipientId",referencedColumnName = "userId")
     private BloodRecipient bloodRecipient;
@@ -28,9 +32,10 @@ public class BloodCollection extends DateAudit {
     @OneToOne
     @JoinColumn(name = "bloodRequestId",referencedColumnName = "Id")
     private BloodRequest bloodRequest;
+
+    private long bloodGroupId;
     @Enumerated(EnumType.STRING)
     private Quantity quantity= Quantity.APPROVED;
-
 
 
 }

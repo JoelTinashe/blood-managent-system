@@ -4,6 +4,7 @@ package com.digitalkrapht.bloodbank.bloodbank.users.models;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Permission;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Privilege;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Role;
+import com.digitalkrapht.bloodbank.bloodbank.users.models.enums.Gender;
 import com.digitalkrapht.bloodbank.bloodbank.utils.auth.UserDateAudit;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

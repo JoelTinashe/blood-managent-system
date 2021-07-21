@@ -1,7 +1,6 @@
 package com.digitalkrapht.bloodbank.bloodbank.users.request;
 
-import com.digitalkrapht.bloodbank.bloodbank.organization.models.BloodGroup;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.Gender;
+import com.digitalkrapht.bloodbank.bloodbank.users.models.enums.Gender;
 import lombok.Data;
 
 
@@ -19,7 +18,7 @@ public class BloodRecipientRequest {
     @NotNull
     private String idNumber;
     @NotNull
-    private int bloodGroupId;
+    private long bloodGroupId;
     @NotNull
     private Gender gender;
 

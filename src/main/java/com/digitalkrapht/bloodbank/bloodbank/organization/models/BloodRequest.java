@@ -1,11 +1,11 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.models;
 
 
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.BloodStatus;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.BloodRecipient;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.UserOrganizationAgent;
 import com.digitalkrapht.bloodbank.bloodbank.utils.auth.DateAudit;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
@@ -15,10 +15,10 @@ import javax.persistence.*;
 public class BloodRequest extends DateAudit {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long Id;
+    private long Id;
     private String quantity;
     @Enumerated(EnumType.STRING)
-    private BloodStatus bLoodStatus=BloodStatus.NOT_SET;
+    private BloodStatus bLoodStatus=BloodStatus.PENDING;
     private Boolean enabled = true;
     @ManyToOne
     @JoinColumn(name = "organisationAgentId", referencedColumnName = "userId")

@@ -1,4 +1,4 @@
-package com.digitalkrapht.bloodbank.bloodbank.users.models;
+package com.digitalkrapht.bloodbank.bloodbank.users.models.enums;
 
 public enum Gender {
     MALE,

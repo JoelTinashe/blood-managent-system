@@ -18,7 +18,7 @@ public class CustomAuditAware implements AuditorAware<String> {
             return null;
         }
    return null;
-      //  return Optional.of(((UserPrincipal) authentication.getPrincipal()).getUserId());
+        //     return Optional.of(((UserPrincipal) authentication.getPrincipal()).getUserId());
     }
 }
 

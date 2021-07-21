@@ -709,6 +709,28 @@ public class ValidateUserProperties {
         return ResponseEntity.ok(true);
     }
 
+    public ResponseEntity isValidDonateBlood(AddDonateBlood request){
+
+        UserDonor userDonor = userDonorRepository.findById(request.getBloodDonorId()).orElse(null);
+        if(userDonor==null){
+
+            return new ResponseEntity<>(new GenericApiError("Could not load Blood Donor Id ",110), HttpStatus.EXPECTATION_FAILED);
+        }
+        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
+            return new ResponseEntity<>(new GenericApiError("Blood Quantity can be empty",105), HttpStatus.EXPECTATION_FAILED);
+        }
+
+        Organisation organisation = organisationRepository.findById(request.getOrganisationId()).orElse(null);
+        if(organisation==null){
+            return new ResponseEntity<>(new GenericApiError("Could not load Organisation Id ",110), HttpStatus.EXPECTATION_FAILED);
+
+
+        }
+
+        return ResponseEntity.ok(true);
+
+    }
+
 
 
 

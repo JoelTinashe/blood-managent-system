@@ -1,6 +1,6 @@
 package com.digitalkrapht.bloodbank.bloodbank.users.request;
 
-import com.digitalkrapht.bloodbank.bloodbank.users.models.Gender;
+import com.digitalkrapht.bloodbank.bloodbank.users.models.enums.Gender;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -10,7 +10,7 @@ public class AddUserDonorRequest {
     private String firstName;
     private String lastName;
 
-    private int bloodGroupId;
+    private long bloodGroupId;
     private int age;
     @NotNull
     private String mobileNumber;

@@ -9,12 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface BloodGroupRepository extends JpaRepository<BloodGroup, Integer> {
+public interface BloodGroupRepository extends JpaRepository<BloodGroup, Long> {
 
     List<BloodGroup> findByEnabled(boolean status);
     Page<BloodGroup> findByEnabled(boolean status, Pageable pageable);
     Long countByEnabled(boolean status);
-//    Optional<BloodGroup> findById(Long id);
+
 }
 
 

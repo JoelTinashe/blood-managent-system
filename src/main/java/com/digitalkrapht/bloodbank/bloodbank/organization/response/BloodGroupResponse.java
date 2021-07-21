@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class BloodGroupResponse {
-    private int id;
+    private Long id;
     private String bloodGroupName;
     private boolean active;
     private String shortName;

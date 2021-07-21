@@ -7,13 +7,13 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UpdateBloodRequest {
 
-    private  Long Id;
+    private  long Id;
     @NotNull
     private String quantity;
     @NotNull
     private String organisationAgentId;
     @NotNull
-    private int bloodGroupId;
+    private long bloodGroupId;
     @NotNull
     private String bloodRecipientId;
 

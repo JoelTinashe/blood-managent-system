@@ -21,7 +21,6 @@ public class UserOrganizationAgent extends User{
     private String mobileNumber;
     private String address;
     private String designation;
-    private String organisationName;
     @ManyToOne
     @JoinColumn(name = "organisationId",referencedColumnName = "id")
     private Organisation organisation;

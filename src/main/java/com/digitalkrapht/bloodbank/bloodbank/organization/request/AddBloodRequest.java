@@ -11,7 +11,7 @@ public class AddBloodRequest {
     @NotNull
     private String organisationAgentId;
     @NotNull
-    private int bloodGroupId;
+    private long bloodGroupId;
     @NotNull
     private String bloodRecipientId;
 }

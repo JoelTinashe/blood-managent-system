@@ -1,22 +1,17 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.service;
 
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.*;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.BloodStatus;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.CollectionStatus;
 import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.*;
 import com.digitalkrapht.bloodbank.bloodbank.organization.request.*;
 import com.digitalkrapht.bloodbank.bloodbank.organization.response.*;
-import com.digitalkrapht.bloodbank.bloodbank.security.models.Permission;
-import com.digitalkrapht.bloodbank.bloodbank.security.models.Privilege;
-import com.digitalkrapht.bloodbank.bloodbank.security.models.Role;
-import com.digitalkrapht.bloodbank.bloodbank.security.models.RoleName;
 import com.digitalkrapht.bloodbank.bloodbank.security.repository.PermissionRepository;
 import com.digitalkrapht.bloodbank.bloodbank.security.repository.PrivilegeRepository;
 import com.digitalkrapht.bloodbank.bloodbank.security.repository.RoleRepository;
-import com.digitalkrapht.bloodbank.bloodbank.security.response.PermissionResponse;
-import com.digitalkrapht.bloodbank.bloodbank.security.response.PrivilegeResponse;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.repository.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.request.*;
-import com.digitalkrapht.bloodbank.bloodbank.users.response.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.service.UserService;
 import com.digitalkrapht.bloodbank.bloodbank.utils.format.FormatUtility;
 import com.digitalkrapht.bloodbank.bloodbank.utils.generators.StringGeneratorUtility;
@@ -24,7 +19,6 @@ import com.digitalkrapht.bloodbank.bloodbank.utils.responcse.GenericApiError;
 import com.digitalkrapht.bloodbank.bloodbank.utils.responcse.GenericApiResponse;
 import com.digitalkrapht.bloodbank.bloodbank.utils.responcse.PagedResponse;
 import com.digitalkrapht.bloodbank.bloodbank.validation.ValidateUserProperties;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,12 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Collections;
+import javax.transaction.Transactional;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.IntToLongFunction;
 
 import static java.util.stream.Collectors.toList;
 
@@ -93,7 +84,8 @@ public class OrganisationService {
     StockDetailsLogRepository stockDetailsLogRepository;
     @Autowired
     DonorLogRepository donorLogRepository;
-
+   @Autowired
+   BloodCollectionLogRepository bloodCollectionLogRepository;
 
 
     //////////////////////////////////////OrganizationAgent////////////////////////////////////////////
@@ -156,7 +148,7 @@ public class OrganisationService {
         }
         organization.setEnabled(status);
         organisationRepository.save(organization);
-        return ResponseEntity.ok(new GenericApiResponse("Agent Status Successfully Updated"));
+        return ResponseEntity.ok(new GenericApiResponse("Organisation Status Successfully Updated"));
 
     }
     //get  active organisation
@@ -164,6 +156,20 @@ public class OrganisationService {
         List<Organisation> agents = organisationRepository.findByEnabled(true);
         List<OrganisationResponse> userSummaries = agents.stream().map(this::mapOrganisationEntityToResponse).collect(toList());
         return ResponseEntity.ok(userSummaries);
+    }
+    public ResponseEntity getAllOrganisations(int page, int size) {
+        formatUtility.validatePageNumberAndSize(page, size);
+        // Retrieve events
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+        // Retrieve events
+
+        Page<Organisation> failures = organisationRepository.findAll(pageable);
+
+        List<OrganisationResponse> ticketFailureResponses = failures.stream().map(this::mapOrganisationEntityToResponse).collect(toList());
+
+        return ResponseEntity.ok(new PagedResponse<>(ticketFailureResponses, failures.getNumber(),
+                failures.getSize(), failures.getTotalElements(), failures.getTotalPages(), failures.isLast()));
+
     }
     //////////////////////////////////////Blood Creation////////////////////////////////////////////
     public ResponseEntity createBloodGroup(AddBloodGroupRequest request) {
@@ -198,7 +204,7 @@ public class OrganisationService {
         return ResponseEntity.ok(new GenericApiResponse("Blood Group  Updated Successfully"));
     }
     // changing blood group activate /deactivate Status
-    public ResponseEntity changeBloodGroupStatus(Integer id, boolean status) {
+    public ResponseEntity changeBloodGroupStatus(Long id, boolean status) {
         BloodGroup  bloodGroup= bloodGrouprepository.findById(id).orElse(null);
         if (bloodGroup == null) {
             return new ResponseEntity<>(new GenericApiError("blood group with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
@@ -214,6 +220,21 @@ public class OrganisationService {
         List<BloodGroupResponse> userSummaries = bloodGroups.stream().map(this::mapBloodGroupEntityToResponse).collect(toList());
         return ResponseEntity.ok(userSummaries);
     }
+    public ResponseEntity getAllBloodGroup(int page, int size) {
+        formatUtility.validatePageNumberAndSize(page, size);
+        // Retrieve events
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
+        // Retrieve events
+
+        Page<BloodGroup> failures = bloodGrouprepository.findAll(pageable);
+
+        List<BloodGroupResponse> ticketFailureResponses = failures.stream().map(this::mapBloodGroupEntityToResponse).collect(toList());
+
+        return ResponseEntity.ok(new PagedResponse<>(ticketFailureResponses, failures.getNumber(),
+                failures.getSize(), failures.getTotalElements(), failures.getTotalPages(), failures.isLast()));
+
+    }
+
 
     ///////////////////////////////////Blood Request//////////////////////////////////////////////////////
     public ResponseEntity createBloodRequest(AddBloodRequest request) {
@@ -225,15 +246,13 @@ public class OrganisationService {
         BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
         UserOrganizationAgent userOrganizationAgent =organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
         BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
-
-
         BloodRequest bloodRequest = new BloodRequest();
-
         bloodRequest.setQuantity(request.getQuantity());
         bloodRequest.setBloodGroup(bloodGroup);
         bloodRequest.setBloodRecipient(bloodRecipient);
         bloodRequest.setUserOrganizationAgent(userOrganizationAgent);
          bloodRequestRepository.save(bloodRequest);
+
 
 
         return ResponseEntity.ok(new GenericApiResponse("Blood Request  Created Successfully"));
@@ -266,7 +285,7 @@ public class OrganisationService {
         return ResponseEntity.ok(new GenericApiResponse("Blood request/ Updated Successfully"));
     }
     //  activate /deactivate of Blood Request
-    public ResponseEntity changeBloodRequestStatus(Long Id, boolean status) {
+    public ResponseEntity changeBloodRequestActivateOrDeactivate(Long Id, boolean status) {
         BloodRequest bloodRequest = bloodRequestRepository.findById(Id).orElse(null);
         if(bloodRequest==null){
             return new ResponseEntity<>(new GenericApiError("Blood Request with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
@@ -277,6 +296,18 @@ public class OrganisationService {
         bloodRequest.setEnabled(status);
         bloodRequestRepository.save(bloodRequest);
         return ResponseEntity.ok(new GenericApiResponse("Blood Request Status Successfully Updated"));
+
+    }
+    public ResponseEntity changeBloodRequestStatus(Long Id, BloodStatus status) {
+        BloodRequest bloodRequest = bloodRequestRepository.findById(Id).orElse(null);
+        if(bloodRequest==null){
+            return new ResponseEntity<>(new GenericApiError("Blood Request with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
+
+
+        }
+        bloodRequest.setBLoodStatus(status);
+        bloodRequestRepository.save(bloodRequest);
+        return ResponseEntity.ok(new GenericApiResponse("Blood Request Status changed Successfully"));
 
     }
     //get  active  Blood Request
@@ -308,25 +339,33 @@ public class OrganisationService {
     if (theResponse.getStatusCode().value() != 200) {
         return theResponse;
     }
-    BloodCollection bloodCollection = new BloodCollection();
+   BloodCollection bloodCollection = new BloodCollection();
+
     BloodRequest bloodRequest = bloodRequestRepository.findById(request.getBloodRequestId()).orElse(null);
+
+    BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
     BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
     UserBackOfficeAdmin backOfficeAdmin = userBackOfficeAdminRepository.findById(request.getBackOfficeAdminId()).orElse(null);
     UserOrganizationAgent userOrganizationAgent = organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
-        DonorLogsRequest request1 = new DonorLogsRequest();
+
+
 
     bloodCollection.setBloodRecipient(bloodRecipient);
     bloodCollection.setBloodRequest(bloodRequest);
     bloodCollection.setBackOfficeAdmin(backOfficeAdmin);
     bloodCollection.setOrganizationAgent(userOrganizationAgent);
-        bloodCollectionRepository.save(bloodCollection);
-//        DonorLogsRequest logs = new DonorLogsRequest();
-//
-//
-//        request1.setBloodDonorId(logs.getBloodDonorId());
-//        request1.setBackAgentId(logs.getBackAgentId());
-//        request1.setDonationDate(logs.getDonationDate());
-//
+    bloodCollection.setBloodGroupId(bloodGroup.getId());
+    bloodCollectionRepository.save(bloodCollection);
+
+
+      BloodCollectionLog collectionLog = new BloodCollectionLog();
+      collectionLog.setUserOrganizationAgentId(userOrganizationAgent.getUserId());
+      collectionLog.setBloodRecipientId(bloodRecipient.getUserId());
+      collectionLog.setBloodGroupId(bloodGroup.getId());
+      bloodCollection.setQuantity(bloodCollection.getQuantity());
+      bloodCollectionLogRepository .save(collectionLog);
+
+
 
 
 
@@ -356,7 +395,7 @@ public class OrganisationService {
         bloodCollectionRepository.save(collection);
         return ResponseEntity.ok(new GenericApiResponse("Blood Collection request Updated Successfully"));
     }
-    public ResponseEntity changeBloodCollectionStatus(Integer Id, boolean status) {
+    public ResponseEntity changeBloodCollectionActiveOrDeactivate(long Id, boolean status) {
         BloodCollection bloodCollection= bloodCollectionRepository.findById(Id).orElse(null);
         if(bloodCollection==null){
             return new ResponseEntity<>(new GenericApiError("Blood Collection with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
@@ -365,6 +404,20 @@ public class OrganisationService {
         }
 
         bloodCollection.setEnabled(status);
+        bloodCollectionRepository.save(bloodCollection);
+        return ResponseEntity.ok(new GenericApiResponse("Blood Collection Status Successfully Updated"));
+
+    }
+    // changing collection status ie collected, pending etc
+    public ResponseEntity changeBloodCollectionStatus(long Id, CollectionStatus status) {
+        BloodCollection bloodCollection= bloodCollectionRepository.findById(Id).orElse(null);
+        if(bloodCollection==null){
+            return new ResponseEntity<>(new GenericApiError("Blood Collection with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
+
+
+        }
+
+        bloodCollection.setCollectionStatus(status);
         bloodCollectionRepository.save(bloodCollection);
         return ResponseEntity.ok(new GenericApiResponse("Blood Collection Status Successfully Updated"));
 
@@ -402,6 +455,8 @@ public class OrganisationService {
         StockDetails stockDetails = new StockDetails();
 
 
+
+
         BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
         UserBackOfficeAgent backOfficeAgent= userBackOfficeAgentRepository.findById(request.getBackAgentId()).orElse(null);
         UserDonor userDonor = userDonorRepository.findById(request.getBloodDonorId()).orElse(null);
@@ -410,11 +465,24 @@ public class OrganisationService {
         stockDetails.setUnit(request.getUnit());
         stockDetails.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
         stockDetails.setStockAdjustmentType(request.getStockAdjustmentType());
-        stockDetails.setBloodGroup(bloodGroup);
+        stockDetails.setBloodGroupId(bloodGroup.getId());
         stockDetails.setBackOfficeAgent(backOfficeAgent);
         stockDetails.setDonors(userDonor);
-             StockDetails stock = stockDetailsRepository.save(stockDetails);
-             stockDetailsLogRepository.save(stock);
+       stockDetailsRepository.save(stockDetails);
+
+
+        StockDetailsLog stockDetailsLog = new StockDetailsLog();
+        stockDetailsLog.setQuantity(request.getQuantity());
+        stockDetailsLog.setUnit(request.getUnit());
+        stockDetailsLog.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
+        stockDetailsLog.setStockAdjustmentType(request.getStockAdjustmentType());
+        stockDetailsLog.setBloodGroupId(bloodGroup.getId());
+        stockDetailsLog.setBackOfficeAgentId(backOfficeAgent.getUserId());
+        stockDetailsLog.setDonorId(userDonor.getUserId());
+        stockDetailsLogRepository.save(stockDetailsLog);
+
+
+
         return ResponseEntity.ok(new GenericApiResponse("Blood Stock Created Successfully"));
     }
     public ResponseEntity updateStockDetails(UpdateStockDetailsRequest request){
@@ -436,14 +504,14 @@ public class OrganisationService {
 
         StockDetails stockDetails = new StockDetails();
         stockDetails.setDonors(userDonor);
-        stockDetails.setBloodGroup(bloodGroup);
+        stockDetails.setBloodGroupId(bloodGroup.getId());
         stockDetails.setBackOfficeAgent(backOfficeAgent);
         stockDetails.setStockAdjustmentType(request.getStockAdjustmentType());
         stockDetails.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
         stockDetails.setUnit(request.getUnit());
         stockDetails.setQuantity(request.getQuantity());
-         StockDetails stock=  stockDetailsRepository.save(stockDetails);
-         stockDetailsLogRepository.save(stock);
+          stockDetailsRepository.save(stockDetails);
+
         return ResponseEntity.ok(new GenericApiResponse("Stock details request Updated Successfully"));
     }
     public ResponseEntity getAllStockDetails(int page, int size) {
@@ -465,9 +533,9 @@ public class OrganisationService {
     //mapping Organisation Response to the  Entity
     public StockDetailsResponse mapBloodStockDetailsEntityToResponse(StockDetails stockDetails) {
         StockDetailsResponse stockDetailsResponse = new StockDetailsResponse();
-        if(stockDetails.getBloodGroup()!=null){
-            stockDetailsResponse.setBloodGroup(this.mapBloodGroupEntityToResponse(stockDetails.getBloodGroup()));
-        }
+//        if(stockDetails.getBloodGroupId()){
+//            stockDetailsResponse.setBloodGroup(this.mapBloodGroupEntityToResponse(stockDetails.getBloodGroup()));
+//        }
         if(stockDetails.getBackOfficeAgent()!=null){
             stockDetailsResponse.setBackOfficeAgent(userService.mapBackOfficeAgentEntityToResponse(stockDetails.getBackOfficeAgent()));
         }
@@ -495,9 +563,9 @@ public class OrganisationService {
             requestResponse.setUserOrganizationAgent(userService.mapUserOrganisationAgentEntityToResponse(bloodRequest.getUserOrganizationAgent()));
         }
         requestResponse.setId(bloodRequest.getId());
+        requestResponse.setBLoodStatus(bloodRequest.getBLoodStatus());
         requestResponse.setQuantity(bloodRequest.getQuantity());
         requestResponse.setActive(bloodRequest.getEnabled());
-        requestResponse.setBLoodStatus(bloodRequest.getBLoodStatus());
         return requestResponse;
     }
     public OrganisationResponse mapOrganisationEntityToResponse(Organisation organisation) {
@@ -507,6 +575,7 @@ public class OrganisationService {
         response.setId(organisation.getId());
         response.setOrganisationName(organisation.getOrganisationName());
         response.setAddress(organisation.getAddress());
+        response.setPhoneNumber(organisation.getPhoneNumber());
         response.setOrganisationType(organisation.getOrganisationType());
         response.setContactPerson(organisation.getContactPerson());
         response.setActive(organisation.getEnabled());
@@ -540,6 +609,7 @@ public class OrganisationService {
          response.setUserBackOfficeAdmin(userService.mapBackOfficeAdminEntityToResponse(bloodCollection.getBackOfficeAdmin()));
 
      }
+     response.setCollectionStatus(bloodCollection.getCollectionStatus());
       response.setQuantity(bloodCollection.getQuantity());
      response.setId(bloodCollection.getId());
      response.setActive(bloodCollection.isEnabled());

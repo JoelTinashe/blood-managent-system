@@ -7,9 +7,9 @@ import java.time.LocalDate;
 @Data
 public class DonorLogsRequest {
 
-    private LocalDate donationDate ;
-    private String backAgentId;
+    private String organisationId;
     private String bloodDonorId;
+    private LocalDate localDate;
 
 
 }

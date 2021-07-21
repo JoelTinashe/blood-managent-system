@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class StockDetailsLogResponse {
 
-    private int id;
+    private long id;
     private String quantity;
     private String unit;
     private String stockAdjustmentType;

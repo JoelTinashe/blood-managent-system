@@ -1,8 +1,11 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.controller;
 
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.BloodStatus;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.CollectionStatus;
 import com.digitalkrapht.bloodbank.bloodbank.organization.request.*;
 import com.digitalkrapht.bloodbank.bloodbank.organization.service.OrganisationService;
-import com.digitalkrapht.bloodbank.bloodbank.users.request.*;
+import com.digitalkrapht.bloodbank.bloodbank.users.request.AddUserOrganizationAgentRequest;
+import com.digitalkrapht.bloodbank.bloodbank.users.request.UpdateUserOrganizationAgentRequest;
 import com.digitalkrapht.bloodbank.bloodbank.users.service.UserService;
 import com.digitalkrapht.bloodbank.bloodbank.utils.constants.AppConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,12 +21,22 @@ public class OrganisationController {
     @Autowired
     OrganisationService organisationService;
 
+    @Autowired
+    UserService userService;
+
 //////////////////////////////////////////////////////Organisation/////////////////////////////////////////////////////
     @PostMapping("/organisation/create")
     @Operation(description="Create Organisation ")
     public ResponseEntity createOrganisation(@Valid @RequestBody AddOrganisationRequest request) {
         return organisationService.createOrganisation(request);
     }
+
+    @GetMapping("/organisation/view/all")
+    public ResponseEntity getAllOrganisations(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+                                                 @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
+        return organisationService.getAllOrganisations(page, size);
+    }
+
 
     @PutMapping("/organisation/update")
     @Operation(description="Update organisation ")
@@ -38,130 +51,60 @@ public class OrganisationController {
         return organisationService.changeOrganisationStatus(Id, status);
     }
 
+
+
     @GetMapping("/organisation/view/active")
     public ResponseEntity getActiveOrganisation() {
         return organisationService.getActiveOrganisation();
     }
 
-//    @GetMapping("/organisation/view/byStatus/{status}")
-//    public ResponseEntity getOrganisationByStatus(@PathVariable boolean status,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-//                                                @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
-//        return organisationService.getOrganisationByStatus(status,page, size);
-//    }
-
-
-
-////////////////////////////// Blood group Controller/////////////////////////////////////////////////////////////////
-
-    @PostMapping("/bloodGroup/create")
-    @Operation(description="Create blood group ")
-    public ResponseEntity createBloodGroup(@Valid @RequestBody AddBloodGroupRequest request) {
-        return organisationService.createBloodGroup(request);
+    ////////////////////////////////////////////Organisation Agents/////////////////////////////////////////////////////////
+    @PostMapping("/organisationAgent/create")
+    @Operation(description="Create  organisation Agent")
+    public ResponseEntity createOrganisationAgent(@Valid @RequestBody AddUserOrganizationAgentRequest request) {
+        return userService.createOrganisationAgent(request);
     }
-    @PutMapping("/bloodGroup/update")
-    @Operation(description="Update bloodGroup ")
-    public ResponseEntity updateBloodGroup(@Valid @RequestBody UpdateBloodGroupRequest request) {
+    @PutMapping("/organisationAgent/update")
+    @Operation(description="Update Organisation Agents ")
+    public ResponseEntity updateOrganisationAgent(@Valid @RequestBody UpdateUserOrganizationAgentRequest request) {
 
-        return organisationService.updateBloodGroup(request);
+        return userService.updateOrganisationAgent(request);
     }
-    @GetMapping("/bloodGroup/activation/{Id}/{status}")
-    @Operation(description="activate or deactivate Blood Group")
-    public ResponseEntity changeBloodGroupStatus(@PathVariable Integer Id, @PathVariable Boolean status) {
-        return organisationService.changeBloodGroupStatus(Id, status);
+    @GetMapping("/organisationAgent/activation/{userId}/{status}")
+    @Operation(description="activate or deactivate organisation Agents")
+    public ResponseEntity changeOrganisationAgentStatus(@PathVariable String userId, @PathVariable Boolean status) {
+        return userService.changeOrganisationAgentStatus(userId, status);
     }
-    @GetMapping("/bloodGroup/view/active")
-    public ResponseEntity getActiveBloodGroup() {
-        return organisationService.getActiveBloodGroup();
+    @GetMapping("/organisationAgent/view/active")
+    public ResponseEntity getActiveOrganisationAgents() {
+        return userService.getActiveOrganisationAgents();
     }
-
-    ////////////////////////////Blood Request/////////////////////////////////////////////////////////////
-    @PostMapping("/bloodRequest/create")
-    @Operation(description="Create blood Request ")
-    public ResponseEntity createBloodRequest(@Valid @RequestBody AddBloodRequest request) {
-        return organisationService.createBloodRequest(request);
+    @GetMapping("/organisationAgent/view/all")
+    public ResponseEntity getAllOrganisationAgents(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+                                                   @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
+        return userService.getAllOrganisationAgent(page, size);
     }
-
-    @PutMapping("/bloodRequest/update")
-    @Operation(description="Update Blood request ")
-    public ResponseEntity updateBloodRequest(@Valid @RequestBody UpdateBloodRequest request) {
-
-        return organisationService.updateBloodRequest(request);
+    @GetMapping("/organisationAgent/view/byStatus/{status}")
+    public ResponseEntity getorganisationAgentByStatus(@PathVariable boolean status,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+                                                       @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
+        return userService.getOrganisationAgentByStatus(status,page, size);
     }
-
-    @GetMapping("/bloodRequest/activation/{Id}/{status}")
-    @Operation(description="activate or deactivate Blood request")
-    public ResponseEntity changeBloodRequestStatus(@PathVariable long Id, @PathVariable Boolean status) {
-        return organisationService.changeBloodRequestStatus(Id, status);
-    }
-
-    @GetMapping("/bloodRequest/view/active")
-    public ResponseEntity getActiveBloodRequest() {
-        return organisationService.getActiveBloodRequest();
-    }
-
-    @GetMapping("/bloodRequests/view/all")
-    public ResponseEntity getAllBackOfficeAgents(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-                                                 @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
-        return organisationService.getAllBloodRequests(page, size);
+    @GetMapping("/organisationAgent/view/byUserId/{userId}")
+    public ResponseEntity getOrganisationAgentById(@PathVariable String userId) {
+        return userService.getOrganisationById(userId);
     }
 
 
-/////////////////////////////////////////////// Blood Collection//////////////////////////////////////////////////////////
-
-    @PostMapping("/bloodCollection/create")
-    @Operation(description="Create blood Collection ")
-    public ResponseEntity createBloodCollection(@Valid @RequestBody AddBloodCollectionRequest request) {
-        return organisationService.createBloodCollection(request);
-    }
-
-    @PutMapping("/bloodColletion/update")
-    @Operation(description="Update blood collection ")
-    public ResponseEntity updateBloodCollection(@Valid @RequestBody UpdateBloodCollectionRequest request) {
-
-        return organisationService.updateBloodCollect(request);
-    }
-
-    @GetMapping("/bloodColletion/activation/{Id}/{status}")
-    @Operation(description="activate or deactivate Blood Collection")
-    public ResponseEntity changeBloodRequestStatus(@PathVariable Integer Id, @PathVariable Boolean status) {
-        return organisationService.changeBloodCollectionStatus(Id, status);
-    }
-
-    @GetMapping("/bloodCollection/view/active")
-    public ResponseEntity getActiveBloodCollection() {
-        return organisationService.getActiveBloodCollection();
-    }
-
-    @GetMapping("/bloodCollection/view/all")
-    public ResponseEntity getAllBloodCollections(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-                                                 @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size)
-    {
-        return organisationService.getAllBloodCollections(page, size);
-    }
 
 
-/////////////////////////stock details//////////////////////////////////////////////////////////////////
 
 
-    @PostMapping("/stockDetails/create")
-    @Operation(description="Create blood Stock Details ")
-    public ResponseEntity createStockDetails(@Valid @RequestBody AddStockRequest request) {
-        return organisationService.createStockDetails(request);
-    }
 
-    @PutMapping("/stockDetails/update")
-    @Operation(description="Update blood Stock Details ")
-    public ResponseEntity updateBloodStockDetails(@Valid @RequestBody UpdateStockDetailsRequest request) {
 
-        return organisationService.updateStockDetails(request);
-    }
 
-    @GetMapping("/bloodStockdetails/view/all")
-    public ResponseEntity getAllStockDetails(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-                                                 @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size)
-    {
-        return organisationService.getAllStockDetails(page, size);
-    }
+
+
+
 
 
 }

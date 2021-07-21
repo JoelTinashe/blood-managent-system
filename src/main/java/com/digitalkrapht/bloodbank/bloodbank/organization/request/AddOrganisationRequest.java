@@ -1,7 +1,6 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.request;
 
-import com.digitalkrapht.bloodbank.bloodbank.organization.models.OrganisationType;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.Gender;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.OrganisationType;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;

@@ -8,5 +8,6 @@ import javax.validation.constraints.NotNull;
 public class AddBloodGroupRequest {
     @NotNull
     private String bloodGroupName;
+    @NotNull
     private String shortName;
 }

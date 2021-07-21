@@ -5,10 +5,8 @@ import com.digitalkrapht.bloodbank.bloodbank.nofications.email.request.Mail;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.BloodGroup;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.Organisation;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.StockDetailsLog;
-import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.BloodGroupRepository;
-import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.DonorLogRepository;
-import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.OrganisationRepository;
-import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.StockDetailsLogRepository;
+import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.*;
+import com.digitalkrapht.bloodbank.bloodbank.organization.response.OrganisationResponse;
 import com.digitalkrapht.bloodbank.bloodbank.organization.service.OrganisationService;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Permission;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Privilege;
@@ -42,6 +40,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Id;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -85,12 +84,17 @@ public class UserService {
 
     @Autowired
     OrganisationService organisationService;
+
+    @Autowired
+    DonateBloodRepository donateBloodRepository;
     @Autowired
     BloodRecipientRepositorry bloodRecipientRepositorry;
     @Autowired
     DonorLogRepository donorLogRepository;
     @Autowired
     EmailExecutor emailExecutor;
+
+
 
 
     //////////////////////Back Office Admins////////////////////////////////////////////////////////
@@ -117,7 +121,7 @@ public class UserService {
         return ResponseEntity.ok(new GenericApiResponse("Office Admin Status Successfully Updated"));
 
     }
-    public ResponseEntity getAllBackOfficeAdmins(int page, int size) {
+    public ResponseEntity getAllBackOfficeAdmins(int page, int size,String userId) {
         formatUtility.validatePageNumberAndSize(page, size);
         // Retrieve events
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
@@ -131,7 +135,7 @@ public class UserService {
                 failures.getSize(), failures.getTotalElements(), failures.getTotalPages(), failures.isLast()));
 
     }
-    public ResponseEntity getBackAdminById(String userId) {
+    public ResponseEntity getBackAdminById(String userId,String user) {
 
         UserBackOfficeAdmin admin = userBackOfficeAdminRepository.findById(userId).orElse(null);
         if (admin == null) {
@@ -143,7 +147,7 @@ public class UserService {
 
     }
     // create Back office admins
-    public ResponseEntity addBackOfficeAdmin(AddUserBackOfficeAdminRequest request) {
+    public ResponseEntity addBackOfficeAdmin(AddUserBackOfficeAdminRequest request,String userId) {
 
         ResponseEntity theResponse = validateUserProperties.isValidAddBackOfficeAdminRequest (request);
         if (theResponse.getStatusCode().value() != 200) {
@@ -175,7 +179,7 @@ public class UserService {
 
     }
     // updating Back office Admin
-    public ResponseEntity updateBackOfficeAdmin(UpdateUserBackOfficeAdminRequest request){
+    public ResponseEntity updateBackOfficeAdmin(UpdateUserBackOfficeAdminRequest request,String userId){
 
         ResponseEntity theResponse = validateUserProperties.isValidUpdateBackOfficeAdminRequest(request);
         if (theResponse.getStatusCode().value() != 200) {
@@ -192,7 +196,7 @@ public class UserService {
         admin.setUsername(request.getEmail());
         admin.setGender(request.getGender());
         userBackOfficeAdminRepository.save(admin);
-        return ResponseEntity.ok(new GenericApiResponse("Shop Admin Updated Successfully"));
+        return ResponseEntity.ok(new GenericApiResponse("Back Office Admin Updated Successfully"));
     }
 
 
@@ -308,7 +312,7 @@ public class UserService {
 
     //////////  Create Donor Customer///////////////
 
-    public ResponseEntity createUserDonor(AddUserDonorRequest request) {
+    public ResponseEntity createUserDonor(AddUserDonorRequest request ,String userId) {
 
         BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
 
@@ -331,8 +335,6 @@ public class UserService {
         donor.setNationalID(request.getNationalID());
         donor.setAge(request.getAge());
 
-//        donor.setBloodGroup(request.getBloodGroup());
-//        donor.setDonorStatus(request.get);
 
         donor.setUserId(stringGeneratorUtility.fetchValidUserId(RoleName.ROLE_CUSTOMER_DONOR));
         donor.setResetPin(true);
@@ -343,11 +345,21 @@ public class UserService {
         UserDonor savedDonor = userDonorRepository.save(donor);
         String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
         this.processGetPasswordNotifications(donor.getEmail(),emailMessage);
+        DonorLogs donorLogs = new DonorLogs();
+        UserDonor d = userDonorRepository.findById(userId).orElse(null);
+
+         donorLogRepository.save(donorLogs);
+
+
 
 
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_CUSTOMER_DONOR,savedDonor);
-        return ResponseEntity.ok(new GenericApiResponse("Customer Donor  Created Successfully"+"Your Password have been sent through emai"));
+
+
+
+        return ResponseEntity.ok(new GenericApiResponse("Customer Donor  Created Successfully"+"Your Password have been sent through email"));
+
     }
        //get Back Customer by status
     public ResponseEntity getCustomerDonorByStatus(boolean status, int page, int size) {
@@ -367,6 +379,23 @@ public class UserService {
         userDonor.setEnabled(status);
         userDonorRepository.save(userDonor);
         return ResponseEntity.ok(new GenericApiResponse("Customer Status Successfully Updated"));
+
+    }
+    // Approve or Reject Donor Status
+    public ResponseEntity approveOrRejectDonorStatus(String UserId, boolean status) {
+        UserDonor userDonor = userDonorRepository.findById(UserId).orElse(null);
+        if (userDonor == null) {
+            return new ResponseEntity<>(new GenericApiError("Donor with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
+        }
+
+        if(status!=true){
+            return ResponseEntity.ok(new GenericApiResponse("Donor Status Rejected"));
+        }
+
+            userDonor.setApproved(status);
+            userDonorRepository.save(userDonor);
+            return ResponseEntity.ok(new GenericApiResponse("Donor Status Successfully Approved"));
+
 
     }
     // //Get all Customers
@@ -401,13 +430,18 @@ public class UserService {
         List<UserDonorResponse> userSummaries = agents.stream().map(this::mapUserDonorResponseEntityToResponse).collect(toList());
         return ResponseEntity.ok(userSummaries);
     }
-    /////////////////////Update Customer////////////////////////
-    public ResponseEntity updateCustomer(UpdateUserDonorRequest request){
+    /////////////////////Update Customer Donor////////////////////////
+    public ResponseEntity updateCustomer(UpdateUserDonorRequest request,String loggedInUserId ){
+
+        if(!this.isLoggedInUserDonor(loggedInUserId)){
+            return new ResponseEntity<>(new GenericApiError("You are not authorized to perform this action",102), HttpStatus.UNAUTHORIZED);
+        }
 
         ResponseEntity theResponse = validateUserProperties.isValidUpdateCustomerDonorRequest(request);
         if (theResponse.getStatusCode().value() != 200) {
             return theResponse;
         }
+        UserOrganizationAgent organizationAgent = organisationAgentRepository.findById(request.getUserId()).orElse(null);
         UserDonor donor = userDonorRepository.findById(request.getUserId()).orElse(null);
         if(donor==null){
             return new ResponseEntity<>(new GenericApiError("Could Customer Profile",110), HttpStatus.NOT_FOUND);
@@ -419,9 +453,44 @@ public class UserService {
         donor.setUsername(request.getEmail());
         donor.setGender(request.getGender());
         userDonorRepository.save(donor);
+
+
+
         return ResponseEntity.ok(new GenericApiResponse("Customer Updated Successfully"));
     }
+    public  ResponseEntity donateBlood( AddDonateBlood request){
 
+        ResponseEntity theResponse = validateUserProperties.isValidDonateBlood (request);
+        if (theResponse.getStatusCode().value() != 200) {
+            return theResponse;
+        }
+        UserDonor userDonor = userDonorRepository.findById(request.getBloodDonorId()).orElse(null);
+        if(userDonor==null){
+
+            return new ResponseEntity<>(new GenericApiError("Could not load Blood Donor Id ",110), HttpStatus.EXPECTATION_FAILED);
+        }
+        Organisation organisation = organisationRepository.findById(request.getOrganisationId()).orElse(null);
+
+        DonateBlood blood = new DonateBlood();
+
+        blood.setDonors(userDonor);
+        blood.setOrganisation(organisation);
+        blood.setQuantity(request.getQuantity());
+        donateBloodRepository.save(blood);
+
+        DonorLogs donorLogs = new DonorLogs();
+        donorLogs.setDonorId(userDonor.getUserId());
+        donorLogs.setLocal(LocalDate.now());
+        donorLogs.setOrganizationId(organisation.getId());
+        donorLogRepository.save(donorLogs);
+
+
+
+
+        return ResponseEntity.ok(new GenericApiResponse("You have Successfully donated blood"));
+
+
+    }
 
     //////////////////////////////////////OrganizationAgent////////////////////////////////////////////
 
@@ -455,6 +524,7 @@ public class UserService {
         organizationAgent.setTokenHash(stringGeneratorUtility.fetchValidTokenHash());
         organizationAgent.setUsername(request.getEmail());
         UserOrganizationAgent savedAgent = organisationAgentRepository.save(organizationAgent);
+
         //////////////////////assign Permissions////////////////////////
         assignPermissionsByRoleToUser(RoleName.ROLE_ORGANIZATION_AGENT,savedAgent);
         String emailMessage = "You Have Successfully received Your Password  Your new Pin Is "+ pin;
@@ -479,6 +549,7 @@ public class UserService {
         agent.setUsername(request.getEmail());
         agent.setGender(request.getGender());
         organisationAgentRepository.save(agent);
+
         return ResponseEntity.ok(new GenericApiResponse("Organisation agent Updated Successfully"));
     }
     //get Organisation Agent by status
@@ -756,6 +827,8 @@ public class UserService {
             agentResponse.setOrganisation(organisationService.mapOrganisationEntityToResponse(organizationAgent.getOrganisation()));
         }
         agentResponse.setEmail(organizationAgent.getEmail());
+        agentResponse.setAddress(organizationAgent.getAddress());
+        agentResponse.setDesignation(organizationAgent.getDesignation());
         agentResponse.setFirstName(organizationAgent.getFirstName());
         agentResponse.setLastName(organizationAgent.getLastName());
         agentResponse.setUserId(organizationAgent.getUserId());
@@ -835,6 +908,20 @@ public class UserService {
 
         mail.setProps(model);
         emailExecutor.ScheduledMailExecutor(mail,"general",1);
+
+    }
+    private boolean isLoggedInUserDonor(String loggedInUserId ){
+
+        UserDonor userDonor = userDonorRepository.findById(loggedInUserId).orElse(null);
+
+        if(userDonor!=null){
+            return true;
+        }
+        else{
+
+            return false;
+        }
+
 
     }
 

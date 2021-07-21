@@ -65,10 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    @Bean
-    public AuditorAware<String> auditorAware() {
-        return new CustomAuditAware();
-    }
+
 
 
     private static final String[] SWAGGER_WHITELIST = {

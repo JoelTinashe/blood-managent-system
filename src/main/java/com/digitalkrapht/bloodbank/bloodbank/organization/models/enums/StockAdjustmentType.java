@@ -1,4 +1,4 @@
-package com.digitalkrapht.bloodbank.bloodbank.organization.models;
+package com.digitalkrapht.bloodbank.bloodbank.organization.models.enums;
 
 public enum StockAdjustmentType {
     CORRECTION,

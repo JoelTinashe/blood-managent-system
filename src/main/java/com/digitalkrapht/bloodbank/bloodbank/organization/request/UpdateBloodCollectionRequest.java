@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class UpdateBloodCollectionRequest {
-    private int id;
+    private long id;
     private String organisationAgentId;
     private String bloodRecipientId;
     private String backOfficeAdminId;

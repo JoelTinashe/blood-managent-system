@@ -2,10 +2,9 @@ package com.digitalkrapht.bloodbank.bloodbank.users.response;
 
 import com.digitalkrapht.bloodbank.bloodbank.organization.response.OrganisationResponse;
 import com.digitalkrapht.bloodbank.bloodbank.security.response.PermissionResponse;
-import com.digitalkrapht.bloodbank.bloodbank.users.models.Gender;
+import com.digitalkrapht.bloodbank.bloodbank.users.models.enums.Gender;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
