@@ -9,11 +9,11 @@ public class UpdateBloodRequest {
 
     private  long Id;
     @NotNull
-    private String quantity;
+    private int quantity;
     @NotNull
     private String organisationAgentId;
     @NotNull
-    private long bloodGroupId;
+    private int bloodGroupId;
     @NotNull
     private String bloodRecipientId;
 

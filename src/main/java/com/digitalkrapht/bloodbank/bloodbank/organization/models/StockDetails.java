@@ -10,26 +10,25 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "stocks")
+@Table(name = "stocksLog")
 @Data
 public class StockDetails extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String quantity;
+    private int donatedQuantity;
     private String unit;
+    @Enumerated(EnumType.STRING)
     private StockAdjustmentType stockAdjustmentType=StockAdjustmentType.NOT_SET;
     private  String stockAdjustmentNotes;
-    @ManyToOne
-    @JoinColumn(name = "bloodDonorId",referencedColumnName = "userId")
-    private UserDonor donors;
+
+    private String donorId;
     @ManyToOne
     @JoinColumn(name = "backAgentId",referencedColumnName = "userId")
     private UserBackOfficeAgent backOfficeAgent;
-//    @ManyToOne
-//    @JoinColumn(name = "bloodGroupId", referencedColumnName = "Id")
-//    private BloodGroup bloodGroup;
-      private Long bloodGroupId;
+    private long bloodGroupId;
+
+
 
 
 

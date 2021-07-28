@@ -10,7 +10,7 @@ public class AddUserDonorRequest {
     private String firstName;
     private String lastName;
 
-    private long bloodGroupId;
+    private int bloodGroupId;
     private int age;
     @NotNull
     private String mobileNumber;

@@ -7,12 +7,11 @@ import lombok.Data;
 public class StockDetailsResponse {
 
     private long id;
-    private String quantity;
+    private int quantity;
     private String unit;
     private StockAdjustmentType stockAdjustmentType;
     private  String stockAdjustmentNotes;
-    private BloodGroupResponse bloodGroup;
     private UserBackOfficeAgentResponse backOfficeAgent;
-    private UserDonorResponse userDonor;
+    private String userDonorId;
 
 }

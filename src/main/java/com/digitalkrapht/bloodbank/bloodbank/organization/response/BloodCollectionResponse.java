@@ -1,7 +1,6 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.response;
 
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.CollectionStatus;
-import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.Quantity;
 import com.digitalkrapht.bloodbank.bloodbank.users.response.BloodRecipientResponse;
 import com.digitalkrapht.bloodbank.bloodbank.users.response.UserBackOfficeAdminResponse;
 import com.digitalkrapht.bloodbank.bloodbank.users.response.UserOrganisationAgentResponse;
@@ -16,5 +15,5 @@ public class BloodCollectionResponse {
     private UserBackOfficeAdminResponse userBackOfficeAdmin;
     private BloodRequestResponse bloodRequest;
     private boolean active;
-    private Quantity quantity;
+
 }

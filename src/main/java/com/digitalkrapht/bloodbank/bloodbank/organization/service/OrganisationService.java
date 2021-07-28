@@ -81,8 +81,6 @@ public class OrganisationService {
     @Autowired
     StockDetailsRepository stockDetailsRepository;
     @Autowired
-    StockDetailsLogRepository stockDetailsLogRepository;
-    @Autowired
     DonorLogRepository donorLogRepository;
    @Autowired
    BloodCollectionLogRepository bloodCollectionLogRepository;
@@ -192,7 +190,7 @@ public class OrganisationService {
         if (theResponse.getStatusCode().value() != 200) {
             return theResponse;
         }
-        BloodGroup bloodGroup = bloodGrouprepository.findById(request.getId()).orElse(null);
+        BloodGroup bloodGroup = bloodGrouprepository.findById(request.getBloodId()).orElse(null);
         if(bloodGroup==null){
             return new ResponseEntity<>(new GenericApiError("Could not load blood group ",110), HttpStatus.NOT_FOUND);
         }
@@ -204,7 +202,7 @@ public class OrganisationService {
         return ResponseEntity.ok(new GenericApiResponse("Blood Group  Updated Successfully"));
     }
     // changing blood group activate /deactivate Status
-    public ResponseEntity changeBloodGroupStatus(Long id, boolean status) {
+    public ResponseEntity changeBloodGroupStatus(Integer id, boolean status) {
         BloodGroup  bloodGroup= bloodGrouprepository.findById(id).orElse(null);
         if (bloodGroup == null) {
             return new ResponseEntity<>(new GenericApiError("blood group with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
@@ -243,17 +241,31 @@ public class OrganisationService {
         if (theResponse.getStatusCode().value() != 200) {
             return theResponse;
         }
+
         BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
-        UserOrganizationAgent userOrganizationAgent =organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
+        if(bloodGroup==null){
+
+            return new ResponseEntity<>(new GenericApiError("Blood Group can not be null", 110), HttpStatus.EXPECTATION_FAILED);
+
+        }
+             UserOrganizationAgent userOrganizationAgent =organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
         BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
+        if(request.getQuantity()> bloodGroup.getTotalQuantity()) {
+
+            return new ResponseEntity<>(new GenericApiError("There no sufficient blood in the stock", 405), HttpStatus.EXPECTATION_FAILED);
+
+        }
+
         BloodRequest bloodRequest = new BloodRequest();
         bloodRequest.setQuantity(request.getQuantity());
-        bloodRequest.setBloodGroup(bloodGroup);
+        bloodRequest.setBloodGroupId(bloodGroup.getBloodId());
         bloodRequest.setBloodRecipient(bloodRecipient);
         bloodRequest.setUserOrganizationAgent(userOrganizationAgent);
+        if(bloodRecipient.getBloodGroup().getBloodId()== bloodGroup.getBloodId()){
+         bloodGroup.setTotalQuantity(bloodGroup.getTotalQuantity()- bloodRequest.getQuantity());
+         bloodGrouprepository.save(bloodGroup);
+        }
          bloodRequestRepository.save(bloodRequest);
-
-
 
         return ResponseEntity.ok(new GenericApiResponse("Blood Request  Created Successfully"));
     }
@@ -278,7 +290,7 @@ public class OrganisationService {
        BloodRequest blood = new BloodRequest();
        blood.setQuantity(request.getQuantity());
        blood.setBloodRecipient(bloodRecipient);
-       blood.setBloodGroup(bloodGroup);
+       blood.setBloodGroupId(bloodGroup.getBloodId());
        blood.setUserOrganizationAgent(userOrganizationAgent);
 
        bloodRequestRepository.save(blood);
@@ -305,9 +317,14 @@ public class OrganisationService {
 
 
         }
-        bloodRequest.setBLoodStatus(status);
+        bloodRequest.setBloodStatus(status);
         bloodRequestRepository.save(bloodRequest);
+
+
         return ResponseEntity.ok(new GenericApiResponse("Blood Request Status changed Successfully"));
+
+
+
 
     }
     //get  active  Blood Request
@@ -335,42 +352,52 @@ public class OrganisationService {
 ////////////////////////////////Create Blood Collection///////////////////////////////////////////////////////////
     public ResponseEntity createBloodCollection(AddBloodCollectionRequest request) {
 
-    ResponseEntity theResponse = validateUserProperties.isValidBloodCollection(request);
-    if (theResponse.getStatusCode().value() != 200) {
-        return theResponse;
-    }
-   BloodCollection bloodCollection = new BloodCollection();
+        ResponseEntity theResponse = validateUserProperties.isValidBloodCollection(request);
+        if (theResponse.getStatusCode().value() != 200) {
+            return theResponse;
+        }
 
-    BloodRequest bloodRequest = bloodRequestRepository.findById(request.getBloodRequestId()).orElse(null);
-
-    BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
-    BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
-    UserBackOfficeAdmin backOfficeAdmin = userBackOfficeAdminRepository.findById(request.getBackOfficeAdminId()).orElse(null);
-    UserOrganizationAgent userOrganizationAgent = organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
+            BloodCollection bloodCollection = new BloodCollection();
+            BloodRequest bloodRequest = bloodRequestRepository.findById(request.getBloodRequestId()).orElse(null);
+            if (bloodRequest == null) {
+                return new ResponseEntity<>(new GenericApiError("could not load Blood request with the provided Id", 110), HttpStatus.EXPECTATION_FAILED);
 
 
-
-    bloodCollection.setBloodRecipient(bloodRecipient);
-    bloodCollection.setBloodRequest(bloodRequest);
-    bloodCollection.setBackOfficeAdmin(backOfficeAdmin);
-    bloodCollection.setOrganizationAgent(userOrganizationAgent);
-    bloodCollection.setBloodGroupId(bloodGroup.getId());
-    bloodCollectionRepository.save(bloodCollection);
+            }
+            BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
+            if (bloodRecipient == null) {
+                return new ResponseEntity<>(new GenericApiError("could not load Blood Recipient with the provided Id", 110), HttpStatus.EXPECTATION_FAILED);
 
 
-      BloodCollectionLog collectionLog = new BloodCollectionLog();
-      collectionLog.setUserOrganizationAgentId(userOrganizationAgent.getUserId());
-      collectionLog.setBloodRecipientId(bloodRecipient.getUserId());
-      collectionLog.setBloodGroupId(bloodGroup.getId());
-      bloodCollection.setQuantity(bloodCollection.getQuantity());
-      bloodCollectionLogRepository .save(collectionLog);
+            }
+            UserBackOfficeAdmin backOfficeAdmin = userBackOfficeAdminRepository.findById(request.getBackOfficeAdminId()).orElse(null);
+            UserOrganizationAgent userOrganizationAgent = organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
+            if (userOrganizationAgent == null) {
+                return new ResponseEntity<>(new GenericApiError("could not load Blood Organisation Agent with the provided Id", 110), HttpStatus.EXPECTATION_FAILED);
+
+
+            }
+
+            bloodCollection.setBloodRecipient(bloodRecipient);
+            bloodCollection.setBloodRequest(bloodRequest);
+            bloodCollection.setBackOfficeAdmin(backOfficeAdmin);
+            bloodCollection.setOrganizationAgent(userOrganizationAgent);
+            bloodCollectionRepository.save(bloodCollection);
+
+
+            BloodCollectionLog collectionLog = new BloodCollectionLog();
+            collectionLog.setUserOrganizationAgentId(userOrganizationAgent.getUserId());
+            collectionLog.setBloodRequestId(bloodRequest.getId());
+            collectionLog.setBloodRecipientId(bloodRecipient.getUserId());
+
+            bloodCollectionLogRepository.save(collectionLog);
+
+            return ResponseEntity.ok(new GenericApiResponse("Blood Collection Created Successfully"));
 
 
 
+        }
 
-
-    return ResponseEntity.ok(new GenericApiResponse("Blood Collection Created Successfully"));
-}
     public ResponseEntity updateBloodCollect(UpdateBloodCollectionRequest request){
 
         ResponseEntity theResponse = validateUserProperties.isValidUpdateBloodCollection(request);
@@ -461,25 +488,24 @@ public class OrganisationService {
         UserBackOfficeAgent backOfficeAgent= userBackOfficeAgentRepository.findById(request.getBackAgentId()).orElse(null);
         UserDonor userDonor = userDonorRepository.findById(request.getBloodDonorId()).orElse(null);
 
-        stockDetails.setQuantity(request.getQuantity());
+
         stockDetails.setUnit(request.getUnit());
         stockDetails.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
         stockDetails.setStockAdjustmentType(request.getStockAdjustmentType());
-        stockDetails.setBloodGroupId(bloodGroup.getId());
         stockDetails.setBackOfficeAgent(backOfficeAgent);
-        stockDetails.setDonors(userDonor);
+
        stockDetailsRepository.save(stockDetails);
 
 
-        StockDetailsLog stockDetailsLog = new StockDetailsLog();
-        stockDetailsLog.setQuantity(request.getQuantity());
-        stockDetailsLog.setUnit(request.getUnit());
-        stockDetailsLog.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
-        stockDetailsLog.setStockAdjustmentType(request.getStockAdjustmentType());
-        stockDetailsLog.setBloodGroupId(bloodGroup.getId());
-        stockDetailsLog.setBackOfficeAgentId(backOfficeAgent.getUserId());
-        stockDetailsLog.setDonorId(userDonor.getUserId());
-        stockDetailsLogRepository.save(stockDetailsLog);
+//        StockDetailsLog stockDetailsLog = new StockDetailsLog();
+//        stockDetailsLog.setQuantity(request.getQuantity());
+//        stockDetailsLog.setUnit(request.getUnit());
+//        stockDetailsLog.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
+//        stockDetailsLog.setStockAdjustmentType(request.getStockAdjustmentType());
+//        stockDetailsLog.setBloodGroupId(bloodGroup.getId());
+//        stockDetailsLog.setBackOfficeAgentId(backOfficeAgent.getUserId());
+//        stockDetailsLog.setDonorId(userDonor.getUserId());
+//        stockDetailsLogRepository.save(stockDetailsLog);
 
 
 
@@ -503,13 +529,11 @@ public class OrganisationService {
         UserDonor userDonor = userDonorRepository.findById(request.getBloodDonorId()).orElse(null);
 
         StockDetails stockDetails = new StockDetails();
-        stockDetails.setDonors(userDonor);
-        stockDetails.setBloodGroupId(bloodGroup.getId());
         stockDetails.setBackOfficeAgent(backOfficeAgent);
         stockDetails.setStockAdjustmentType(request.getStockAdjustmentType());
         stockDetails.setStockAdjustmentNotes(request.getStockAdjustmentNotes());
         stockDetails.setUnit(request.getUnit());
-        stockDetails.setQuantity(request.getQuantity());
+
           stockDetailsRepository.save(stockDetails);
 
         return ResponseEntity.ok(new GenericApiResponse("Stock details request Updated Successfully"));
@@ -539,13 +563,9 @@ public class OrganisationService {
         if(stockDetails.getBackOfficeAgent()!=null){
             stockDetailsResponse.setBackOfficeAgent(userService.mapBackOfficeAgentEntityToResponse(stockDetails.getBackOfficeAgent()));
         }
-        if(stockDetails.getDonors()!=null){
-            stockDetailsResponse.setUserDonor(userService.mapUserDonorResponseEntityToResponse(stockDetails.getDonors()));
-        }
-
        stockDetailsResponse.setId(stockDetails.getId());
-        stockDetailsResponse.setQuantity(stockDetails.getQuantity());
         stockDetailsResponse.setUnit(stockDetails.getUnit());
+        stockDetailsResponse.setUserDonorId(stockDetails.getDonorId());
         stockDetailsResponse.setStockAdjustmentNotes(stockDetails.getStockAdjustmentNotes());
         stockDetailsResponse.setStockAdjustmentType(stockDetails.getStockAdjustmentType());
 
@@ -553,9 +573,9 @@ public class OrganisationService {
     }
     public BloodRequestResponse mapBloodRequestEntityToResponse(BloodRequest bloodRequest) {
         BloodRequestResponse requestResponse = new BloodRequestResponse();
-        if(bloodRequest.getBloodGroup()!=null){
-            requestResponse.setBloodGroup(this.mapBloodGroupEntityToResponse(bloodRequest.getBloodGroup()));
-        }
+//        if(bloodRequest.getBloodGroupId()!=null){
+//            requestResponse.setBloodGroup(this.mapBloodGroupEntityToResponse(bloodRequest.getBloodGroup()));
+//        }
         if(bloodRequest.getBloodRecipient()!=null){
             requestResponse.setBloodRecipient(userService.mapBloodRecipientResponseEntity(bloodRequest.getBloodRecipient()));
         }
@@ -563,7 +583,7 @@ public class OrganisationService {
             requestResponse.setUserOrganizationAgent(userService.mapUserOrganisationAgentEntityToResponse(bloodRequest.getUserOrganizationAgent()));
         }
         requestResponse.setId(bloodRequest.getId());
-        requestResponse.setBLoodStatus(bloodRequest.getBLoodStatus());
+        requestResponse.setBLoodStatus(bloodRequest.getBloodStatus());
         requestResponse.setQuantity(bloodRequest.getQuantity());
         requestResponse.setActive(bloodRequest.getEnabled());
         return requestResponse;
@@ -583,7 +603,7 @@ public class OrganisationService {
     }
     public BloodGroupResponse mapBloodGroupEntityToResponse(BloodGroup bloodGroup) {
         BloodGroupResponse response = new BloodGroupResponse();
-        response.setId(bloodGroup.getId());
+        response.setBloodId(bloodGroup.getBloodId());
         response.setBloodGroupName(bloodGroup.getBloodGroupName());
         response.setShortName(bloodGroup.getShortName());
         response.setActive(bloodGroup.isEnabled());
@@ -610,7 +630,6 @@ public class OrganisationService {
 
      }
      response.setCollectionStatus(bloodCollection.getCollectionStatus());
-      response.setQuantity(bloodCollection.getQuantity());
      response.setId(bloodCollection.getId());
      response.setActive(bloodCollection.isEnabled());
 

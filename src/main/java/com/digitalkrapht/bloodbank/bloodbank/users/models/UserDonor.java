@@ -21,11 +21,11 @@ public class UserDonor extends User {
 
     private String mobileNumber;
     private String nationalID;
-    private boolean approved=true;
+    private Boolean approved = true;
     private int age;
 
     @OneToOne
-    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
+    @JoinColumn(name = "bloodGroupId",referencedColumnName = "bloodId")
     private BloodGroup bloodGroup;
 
 

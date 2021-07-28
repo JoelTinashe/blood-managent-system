@@ -17,6 +17,7 @@ public class DonorLogs {
     private long OrganizationId;
     private String donorId;
     private LocalDate local;
+    private String quantity;
 
 
 }

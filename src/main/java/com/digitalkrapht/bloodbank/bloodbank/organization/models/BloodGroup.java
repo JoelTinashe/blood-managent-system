@@ -12,10 +12,12 @@ import javax.persistence.*;
 public class BloodGroup extends DateAudit {
 
        @Id
-        @GeneratedValue(strategy= GenerationType.IDENTITY)
-        private long Id;
+       @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+       private Integer bloodId;
         private String bloodGroupName;
         private boolean enabled = true;
         private String shortName;
+        private int totalQuantity;
 
 }

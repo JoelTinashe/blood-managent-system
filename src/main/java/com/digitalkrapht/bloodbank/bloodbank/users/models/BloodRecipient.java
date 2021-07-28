@@ -23,7 +23,7 @@ public class BloodRecipient extends User{
         @NotNull
         private String idNumber;
         @OneToOne
-        @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
+        @JoinColumn(name = "bloodGroupId",referencedColumnName = "bloodId")
         private BloodGroup bloodGroup;
 
 }

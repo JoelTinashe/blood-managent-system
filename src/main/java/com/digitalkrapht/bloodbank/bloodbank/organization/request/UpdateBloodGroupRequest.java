@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class UpdateBloodGroupRequest {
-    private long Id;
+    private int bloodId;
     private String bloodGroupName;
     private String shortName;
 }

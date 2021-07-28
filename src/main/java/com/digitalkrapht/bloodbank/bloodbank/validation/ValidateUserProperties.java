@@ -1,6 +1,7 @@
 package com.digitalkrapht.bloodbank.bloodbank.validation;
 
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.*;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.BloodStatus;
 import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.*;
 import com.digitalkrapht.bloodbank.bloodbank.organization.request.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.*;
@@ -8,6 +9,7 @@ import com.digitalkrapht.bloodbank.bloodbank.users.repository.*;
 import com.digitalkrapht.bloodbank.bloodbank.users.request.*;
 import com.digitalkrapht.bloodbank.bloodbank.utils.format.FormatUtility;
 import com.digitalkrapht.bloodbank.bloodbank.utils.responcse.GenericApiError;
+import com.digitalkrapht.bloodbank.bloodbank.utils.responcse.GenericApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -432,7 +434,7 @@ public class ValidateUserProperties {
         return ResponseEntity.ok(true);
     }
     public ResponseEntity isValidUpdateBloodGroupRequest(UpdateBloodGroupRequest request){
-        BloodGroup bloodGroup = bloodGroupRepository.findById(request.getId()).orElse(null);
+        BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodId()).orElse(null);
 
         if(bloodGroup==null){
 
@@ -521,14 +523,21 @@ public class ValidateUserProperties {
     /////////////////////////////////Validating Blood Request and Updating/////////////////////
  public ResponseEntity isValidBloodRequest(AddBloodRequest request){
 
-        BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
+//       StockDetails stockDetails =stockDetailsRepository.findByQuantity(request.getQuantity()).orElse(null);
+//        if(stockDetails==null){
+//
+//            return new ResponseEntity<>(new GenericApiError("Could not load Stock Id Id",110), HttpStatus.EXPECTATION_FAILED);
+//        }
+
+    // StockDetails stockDetails= stockDetailsRepository.findById(request.getBloodGroupId()).orElse(null);
+     BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
         if(bloodGroup==null){
             return new ResponseEntity<>(new GenericApiError("Could not load Blood group Id",110), HttpStatus.EXPECTATION_FAILED);
         }
         UserOrganizationAgent userOrganizationAgent =organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
 
         if(userOrganizationAgent==null){
-            return new ResponseEntity<>(new GenericApiError("could not load Agent with the provided Id",110), HttpStatus.EXPECTATION_FAILED);
+            return new ResponseEntity<>(new GenericApiError("could not load Agent with the provided Id",417), HttpStatus.EXPECTATION_FAILED);
         }
         BloodRecipient bloodRecipient = bloodRecipientRepositorry.findById(request.getBloodRecipientId()).orElse(null);
         if(bloodRecipient==null){
@@ -536,10 +545,19 @@ public class ValidateUserProperties {
             return new ResponseEntity<>(new GenericApiError("Could not load Recipient with the provided Id",110), HttpStatus.EXPECTATION_FAILED);
         }
 
+     if(bloodGroup.getBloodId()!= bloodRecipient.getBloodGroup().getBloodId()){
 
-        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
-            return new ResponseEntity<>(new GenericApiError("Quantity cannot be empty",105), HttpStatus.EXPECTATION_FAILED);
+         return new ResponseEntity<>(new GenericApiError("Could not load Recipient Blood Group Id ",405), HttpStatus.METHOD_NOT_ALLOWED);
+
+
+
+     }
+
+        if(request.getQuantity()<0){
+            return new ResponseEntity<>(new GenericApiError("Quantity cannot be Zero",110), HttpStatus.EXPECTATION_FAILED);
         }
+
+
 
         return ResponseEntity.ok(true);
     }
@@ -565,7 +583,7 @@ public class ValidateUserProperties {
         }
 
 
-        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
+        if(request.getQuantity()<0){
             return new ResponseEntity<>(new GenericApiError("Quantity cannot be empty",105), HttpStatus.EXPECTATION_FAILED);
         }
 
@@ -574,10 +592,24 @@ public class ValidateUserProperties {
 
     //////////////////validating Blood Collection/////////////////////////////////////////////////
     public ResponseEntity isValidBloodCollection(AddBloodCollectionRequest request){
+
+        BloodRequest bloodRequest = bloodRequestRepository.findById(request.getBloodRequestId()).orElse(null);
+
+        if(bloodRequest.getBloodStatus().equals(BloodStatus.PENDING)){
+
+            return new ResponseEntity<>(new GenericApiError("can not collect blood while request is still pending", 405), HttpStatus.EXPECTATION_FAILED);
+        }
+
+        if(bloodRequest.getBloodStatus().equals(BloodStatus.REJECTED)){
+
+            return new ResponseEntity<>(new GenericApiError("can not collect blood that was rejected ", 405), HttpStatus.EXPECTATION_FAILED);
+        }
+
         UserOrganizationAgent userOrganizationAgent = organisationAgentRepository.findById(request.getOrganisationAgentId()).orElse(null);
         if(userOrganizationAgent==null){
             return new ResponseEntity<>(new GenericApiError("Could not load Agent Id",110), HttpStatus.EXPECTATION_FAILED);
         }
+
         UserBackOfficeAdmin backOfficeAdmin = userBackOfficeAdminRepository.findById(request.getBackOfficeAdminId()).orElse(null);
         if(backOfficeAdmin==null){
             return new ResponseEntity<>(new GenericApiError("Could not load Admin Id",110), HttpStatus.EXPECTATION_FAILED);
@@ -587,12 +619,13 @@ public class ValidateUserProperties {
 
             return new ResponseEntity<>(new GenericApiError("Could not load Blood Recipient Id",110), HttpStatus.EXPECTATION_FAILED);
         }
-        BloodRequest bloodRequest = bloodRequestRepository.findById(request.getBloodRequestId()).orElse(null);
 
         if(bloodRequest==null){
             return new ResponseEntity<>(new GenericApiError("could not load Blood request with the provided Id",110), HttpStatus.EXPECTATION_FAILED);
 
         }
+
+
         return ResponseEntity.ok(true);
     }
     public ResponseEntity isValidUpdateBloodCollection(UpdateBloodCollectionRequest request){
@@ -645,7 +678,7 @@ public class ValidateUserProperties {
 
             return new ResponseEntity<>(new GenericApiError("Could not load Blood donor Id",110), HttpStatus.EXPECTATION_FAILED);
         }
-        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
+        if(request.getQuantity()<0 ){
             return new ResponseEntity<>(new GenericApiError("Quantity can not be empty",105), HttpStatus.EXPECTATION_FAILED);
         }
         if(request.getUnit()==null || request.getUnit().isEmpty()){
@@ -686,7 +719,7 @@ public class ValidateUserProperties {
 
             return new ResponseEntity<>(new GenericApiError("Could not load Blood donor Id",110), HttpStatus.EXPECTATION_FAILED);
         }
-        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
+        if(request.getQuantity()<0){
             return new ResponseEntity<>(new GenericApiError("Quantity can not be empty",105), HttpStatus.EXPECTATION_FAILED);
         }
         if(request.getUnit()==null || request.getUnit().isEmpty()){
@@ -716,7 +749,7 @@ public class ValidateUserProperties {
 
             return new ResponseEntity<>(new GenericApiError("Could not load Blood Donor Id ",110), HttpStatus.EXPECTATION_FAILED);
         }
-        if(request.getQuantity()==null || request.getQuantity().isEmpty()){
+        if(request.getDonatedQuantity()<0 ){
             return new ResponseEntity<>(new GenericApiError("Blood Quantity can be empty",105), HttpStatus.EXPECTATION_FAILED);
         }
 

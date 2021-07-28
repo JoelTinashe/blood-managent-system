@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UpdateStockDetailsRequest {
     private long id;
-    private String quantity;
+    private int quantity;
     private String unit;
     private StockAdjustmentType stockAdjustmentType;
     private  String stockAdjustmentNotes;
@@ -17,5 +17,6 @@ public class UpdateStockDetailsRequest {
     @NotNull
     private String backAgentId;
     @NotNull
-    private long bloodGroupId;
+    private int bloodGroupId;
 }
+

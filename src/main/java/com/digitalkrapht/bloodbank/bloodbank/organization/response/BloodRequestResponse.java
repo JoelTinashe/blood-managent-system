@@ -9,7 +9,7 @@ import lombok.Data;
 public class BloodRequestResponse {
     private Long Id;
     private boolean active;
-    private String quantity;
+    private int quantity;
     private BloodStatus bLoodStatus;
     private BloodGroupResponse bloodGroup;
     private BloodRecipientResponse bloodRecipient;

@@ -16,16 +16,16 @@ public class BloodRequest extends DateAudit {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long Id;
-    private String quantity;
+    private int quantity;
     @Enumerated(EnumType.STRING)
-    private BloodStatus bLoodStatus=BloodStatus.PENDING;
+    private BloodStatus bloodStatus=BloodStatus.PENDING;
     private Boolean enabled = true;
     @ManyToOne
     @JoinColumn(name = "organisationAgentId", referencedColumnName = "userId")
     private UserOrganizationAgent userOrganizationAgent;
-    @ManyToOne
-    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
-    private BloodGroup bloodGroup;
+//    @OneToOne
+//    @JoinColumn(name = "bloodGroupId",referencedColumnName = "id")
+     private long bloodGroupId;
     @OneToOne
     @JoinColumn(name = "bloodRecipientId",referencedColumnName = "userId")
     private BloodRecipient bloodRecipient;

@@ -4,9 +4,8 @@ import com.digitalkrapht.bloodbank.bloodbank.nofications.email.executor.EmailExe
 import com.digitalkrapht.bloodbank.bloodbank.nofications.email.request.Mail;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.BloodGroup;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.Organisation;
-import com.digitalkrapht.bloodbank.bloodbank.organization.models.StockDetailsLog;
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.StockDetails;
 import com.digitalkrapht.bloodbank.bloodbank.organization.repositroy.*;
-import com.digitalkrapht.bloodbank.bloodbank.organization.response.OrganisationResponse;
 import com.digitalkrapht.bloodbank.bloodbank.organization.service.OrganisationService;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Permission;
 import com.digitalkrapht.bloodbank.bloodbank.security.models.Privilege;
@@ -39,7 +38,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.Id;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -93,6 +91,8 @@ public class UserService {
     DonorLogRepository donorLogRepository;
     @Autowired
     EmailExecutor emailExecutor;
+    @Autowired
+    StockDetailsRepository stockDetailsRepository;
 
 
 
@@ -387,13 +387,14 @@ public class UserService {
         if (userDonor == null) {
             return new ResponseEntity<>(new GenericApiError("Donor with Provided Id Does not  Exist!", 110), HttpStatus.EXPECTATION_FAILED);
         }
-
-        if(status!=true){
-            return ResponseEntity.ok(new GenericApiResponse("Donor Status Rejected"));
-        }
-
             userDonor.setApproved(status);
-            userDonorRepository.save(userDonor);
+           userDonorRepository.save(userDonor);
+         if(!status){
+            return ResponseEntity.ok(new GenericApiResponse("Donor Status Rejected"));
+
+         }
+
+
             return ResponseEntity.ok(new GenericApiResponse("Donor Status Successfully Approved"));
 
 
@@ -469,14 +470,32 @@ public class UserService {
 
             return new ResponseEntity<>(new GenericApiError("Could not load Blood Donor Id ",110), HttpStatus.EXPECTATION_FAILED);
         }
+
+
         Organisation organisation = organisationRepository.findById(request.getOrganisationId()).orElse(null);
 
-        DonateBlood blood = new DonateBlood();
+        BloodGroup bloodGroup = bloodGroupRepository.findById(request.getBloodGroupId()).orElse(null);
+        if(bloodGroup==null){
 
-        blood.setDonors(userDonor);
-        blood.setOrganisation(organisation);
-        blood.setQuantity(request.getQuantity());
-        donateBloodRepository.save(blood);
+            return new ResponseEntity<>(new GenericApiError(" Blood group not available in the stock ",405), HttpStatus.EXPECTATION_FAILED);
+
+        }
+        if(!Objects.equals(userDonor.getBloodGroup().getBloodId(), bloodGroup.getBloodId())){
+
+            return new ResponseEntity<>(new GenericApiError("Could not Load Donor Blood group Id ",405), HttpStatus.EXPECTATION_FAILED);
+
+
+        }
+
+        StockDetails stockDetails = new StockDetails();
+
+        DonateBlood donateBlood = new DonateBlood();
+
+        donateBlood.setDonors(userDonor);
+        donateBlood.setOrganisation(organisation);
+        donateBlood.setDonatedQuantity(request.getDonatedQuantity());
+        donateBlood.setBloodGroupId(bloodGroup.getBloodId());
+        donateBloodRepository.save(donateBlood);
 
         DonorLogs donorLogs = new DonorLogs();
         donorLogs.setDonorId(userDonor.getUserId());
@@ -484,8 +503,16 @@ public class UserService {
         donorLogs.setOrganizationId(organisation.getId());
         donorLogRepository.save(donorLogs);
 
+           stockDetails.setBloodGroupId(bloodGroup.getBloodId());
+           stockDetails.setDonatedQuantity(request.getDonatedQuantity());
+           stockDetails.setDonorId(userDonor.getUserId());
+           stockDetailsRepository.save(stockDetails);
 
+           if(userDonor.getBloodGroup().getBloodId()==bloodGroup.getBloodId()){
 
+               bloodGroup.setTotalQuantity(bloodGroup.getTotalQuantity()+donateBlood.getDonatedQuantity());
+               bloodGroupRepository.save(bloodGroup);
+           }
 
         return ResponseEntity.ok(new GenericApiResponse("You have Successfully donated blood"));
 
@@ -779,9 +806,8 @@ public class UserService {
         response.setFirstName(donor.getFirstName());
         response.setLastName(donor.getLastName());
         response.setUserId(donor.getUserId());
-        response.setDonorStatus(donor.isApproved());
+        response.setDonorStatus(donor.getApproved());
         response.setNationalID(response.getNationalID());
-        response.setGender(donor.getGender());
         response.setMobileNumber(donor.getMobileNumber());
         response.setActive(donor.getEnabled());
         if (donor.getPermissions() != null) {
@@ -799,12 +825,15 @@ public class UserService {
 
 
         BloodRecipientResponse response= new BloodRecipientResponse();
+        if(bloodRecipient.getBloodGroup()!=null){
 
+            response.setBloodGroup(organisationService.mapBloodGroupEntityToResponse(bloodRecipient.getBloodGroup()));
+        }
         response.setEmail(bloodRecipient.getEmail());
         response.setFirstName(bloodRecipient.getFirstName());
         response.setLastName(bloodRecipient.getLastName());
         response.setUserId(bloodRecipient.getUserId());
-        response.setIdNumber(response.getIdNumber());
+        response.setIdNumber(bloodRecipient.getIdNumber());
         response.setGender(bloodRecipient.getGender());
         response.setAddress(bloodRecipient.getAddress());
         response.setPhoneNumber(bloodRecipient.getPhoneNumber());

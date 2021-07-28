@@ -1,7 +1,7 @@
 package com.digitalkrapht.bloodbank.bloodbank.organization.models;
 
+import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.BloodStatus;
 import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.CollectionStatus;
-import com.digitalkrapht.bloodbank.bloodbank.organization.models.enums.Quantity;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.BloodRecipient;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.UserBackOfficeAdmin;
 import com.digitalkrapht.bloodbank.bloodbank.users.models.UserOrganizationAgent;
@@ -33,9 +33,7 @@ public class BloodCollection extends DateAudit {
     @JoinColumn(name = "bloodRequestId",referencedColumnName = "Id")
     private BloodRequest bloodRequest;
 
-    private long bloodGroupId;
-    @Enumerated(EnumType.STRING)
-    private Quantity quantity= Quantity.APPROVED;
+
 
 
 }

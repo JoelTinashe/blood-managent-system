@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class AddStockRequest {
-    private String quantity;
+    private int quantity;
     private String unit;
     private StockAdjustmentType stockAdjustmentType;
     private  String stockAdjustmentNotes;
@@ -16,7 +16,7 @@ public class AddStockRequest {
     @NotNull
     private String backAgentId;
     @NotNull
-    private long bloodGroupId;
+    private int bloodGroupId;
 
 
 

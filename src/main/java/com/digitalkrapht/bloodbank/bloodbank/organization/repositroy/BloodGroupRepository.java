@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface BloodGroupRepository extends JpaRepository<BloodGroup, Long> {
+public interface BloodGroupRepository extends JpaRepository<BloodGroup, Integer> {
 
     List<BloodGroup> findByEnabled(boolean status);
     Page<BloodGroup> findByEnabled(boolean status, Pageable pageable);

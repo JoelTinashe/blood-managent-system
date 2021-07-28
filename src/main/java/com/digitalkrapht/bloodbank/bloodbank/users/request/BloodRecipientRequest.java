@@ -18,7 +18,7 @@ public class BloodRecipientRequest {
     @NotNull
     private String idNumber;
     @NotNull
-    private long bloodGroupId;
+    private int bloodGroupId;
     @NotNull
     private Gender gender;
 
